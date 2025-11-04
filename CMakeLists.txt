@@ -23,4 +23,4 @@ include(external/imgui.cmake)
 include(external/glm.cmake)
 
 add_subdirectory(core)
-add_subdirectory(assignments/final)
+add_subdirectory(final)

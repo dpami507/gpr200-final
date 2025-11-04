@@ -21,6 +21,7 @@
 #include "./shaderz/Time.h"
 #include "./shaderz/VertexGen.h"
 #include "./shaderz/Object.h"
+#include "./shaderz/PhysicsObject.h"
 
 using namespace shaderz;
 
@@ -133,7 +134,11 @@ int main() {
 	Object sphereObj(sphere);
 	Object planeObj(plane);
 	Object cylinderObj(cylinder);
-	Object torusObj(torus);
+	PhyiscsObject torusObj(torus);
+
+	torusObj.useGravity = true;
+	torusObj.transform.position = glm::vec3(-5, 10, 5);
+
 	Object quadObject(quad);
 
 	//Render loop
@@ -193,7 +198,7 @@ int main() {
 			sphereObj.draw(point, wireframe);
 
 			//Torus
-			torusObj.transform.position = glm::vec3(-5, 1, 5);
+			//torusObj.transform.position = glm::vec3(-5, 10, 5);
 			objectShader.setMat4("model", torusObj.transform.GetModel());
 			torusObj.draw(point, wireframe);
 

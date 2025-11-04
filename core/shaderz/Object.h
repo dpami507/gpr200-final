@@ -12,7 +12,7 @@ namespace shaderz {
 		void draw(bool drawAsPoints = false, bool drawWireframe = false);
 
 		Transform transform;
-	private:
+	protected:
 		Mesh* mesh;
 	};
 }

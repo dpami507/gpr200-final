@@ -1,3 +1,6 @@
+#ifndef TIME_H
+#define TIME_H
+
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -14,21 +17,11 @@ namespace shaderz {
 		static float timeScale;
 		static float fps;
 
-		static void Update()
-		{
-			time = glfwGetTime() * timeScale;
-			deltaTime = time - lastTime;
-			lastTime = time;
-			fps = round(1.0 / deltaTime);
-		}
+		static void Update();
 
 	private:
 		static float lastTime;
 	};
-
-	float Time::time = 0.0f;
-	float Time::deltaTime = 0.0f;
-	float Time::lastTime = 0.0f;
-	float Time::timeScale = 1.0f;
-	float Time::fps = 0.0f;
 }
+
+#endif
