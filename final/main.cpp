@@ -111,7 +111,7 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 	//Create Shaders
-	Shader objectShader("assets/lightingShader.vert", "assets/lightingShader.frag");
+	Shader objectShader("assets/terrainShader.vert", "assets/terrainShader.frag");
 	Shader lightShader("assets/lightObj.vert", "assets/lightObj.frag");
 
 	//Generate Texture
@@ -131,15 +131,7 @@ int main() {
 	lightObject.transform.scale = glm::vec3(0.5);
 
 	//Objects
-	Object sphereObj(sphere);
 	Object planeObj(plane);
-	Object cylinderObj(cylinder);
-	PhyiscsObject torusObj(torus);
-
-	torusObj.useGravity = true;
-	torusObj.transform.position = glm::vec3(-5, 10, 5);
-
-	Object quadObject(quad);
 
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -192,26 +184,6 @@ int main() {
 			objectShader.setVec3("viewPos", camera.getPosition());
 			objectShader.setFloat("uTime", Time::time);
 
-			//Sphere
-			sphereObj.transform.position = glm::vec3(5, 1, 5);
-			objectShader.setMat4("model", sphereObj.transform.GetModel());
-			sphereObj.draw(point, wireframe);
-
-			//Torus
-			//torusObj.transform.position = glm::vec3(-5, 10, 5);
-			objectShader.setMat4("model", torusObj.transform.GetModel());
-			torusObj.draw(point, wireframe);
-
-			//Cylinder
-			cylinderObj.transform.position = glm::vec3(-5, 1, -5);
-			objectShader.setMat4("model", cylinderObj.transform.GetModel());
-			cylinderObj.draw(point, wireframe);
-
-			//Cylinder
-			quadObject.transform.position = glm::vec3(5, 1, -5);
-			objectShader.setMat4("model", quadObject.transform.GetModel());
-			quadObject.draw(point, wireframe);
-
 			//Plane
 			planeObj.transform.position = glm::vec3(0, -1, 0);
 			planeObj.transform.scale = glm::vec3(5, 1, 5);
@@ -232,9 +204,9 @@ int main() {
 			lightShader.setVec3("lightColor", lightColor);
 
 			//Set Model
+			lightObject.transform.position = glm::vec3(5 * cos(Time::time), 5 * sin(Time::time), 0);
 			lightShader.setMat4("model", lightObject.transform.GetModel());
-
-			sphere.draw(point, wireframe);
+			lightObject.draw(point, wireframe);
 		}
 
 		//ImGui
