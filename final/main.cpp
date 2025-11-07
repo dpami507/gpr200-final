@@ -22,6 +22,7 @@
 #include "./shaderz/VertexGen.h"
 #include "./shaderz/Object.h"
 #include "./shaderz/PhysicsObject.h"
+#include "./shaderz/Noise.h"
 
 using namespace shaderz;
 
@@ -53,17 +54,10 @@ float lightFalloff = 10;
 int sphereSubdivision = 8;
 float sphereRadius = 1;
 
-//Cylinder
-int cylinderSubdivision = 16;
-glm::vec2 cylinderDimensions = glm::vec2(1.0f, 4.0f);
-
-//Torus
-int torusSubdivision = 8;
-glm::vec2 torusDimensions = glm::vec2(1.0f, 0.5f);
-
-//Plane
-int planeSubdivision = 1;
-glm::vec2 planeDimensions = glm::vec2(1.0f);
+//Terrain
+int terrainSubdivision = 1;
+float terrainSize = 1;
+float heightScale = 1;
 
 //Drawing Options
 int currShade = 2;
@@ -111,7 +105,7 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 	//Create Shaders
-	Shader objectShader("assets/terrainShader.vert", "assets/terrainShader.frag");
+	Shader objectShader("assets/lightingShader.vert", "assets/lightingShader.frag");
 	Shader lightShader("assets/lightObj.vert", "assets/lightObj.frag");
 
 	//Generate Texture
@@ -119,10 +113,7 @@ int main() {
 
 	//Create Primitive Meshes
 	Mesh sphere(createSphere(sphereRadius, sphereSubdivision));
-	Mesh plane(createPlane(planeDimensions.x, planeDimensions.y, planeSubdivision, false));
-	Mesh cylinder(createCylinder(cylinderDimensions.x, cylinderDimensions.y, cylinderSubdivision));
-	Mesh torus(createTorus(torusDimensions.x, torusDimensions.y, torusSubdivision));
-	Mesh quad(createQuad(glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.0, 1.0, -1.0), glm::vec3(0.0, 1.0, -1.0)));
+	Mesh terrain(createTerrain(terrainSize, heightScale, terrainSubdivision));
 
 	//Light Object
 	Object lightObject(sphere);
@@ -131,7 +122,7 @@ int main() {
 	lightObject.transform.scale = glm::vec3(0.5);
 
 	//Objects
-	Object planeObj(plane);
+	Object terrainObj(terrain);
 
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -185,10 +176,10 @@ int main() {
 			objectShader.setFloat("uTime", Time::time);
 
 			//Plane
-			planeObj.transform.position = glm::vec3(0, -1, 0);
-			planeObj.transform.scale = glm::vec3(5, 1, 5);
-			objectShader.setMat4("model", planeObj.transform.GetModel());
-			planeObj.draw(point, wireframe);
+			terrainObj.transform.position = glm::vec3(0, -1, 0);
+			terrainObj.transform.scale = glm::vec3(5, 1, 5);
+			objectShader.setMat4("model", terrainObj.transform.GetModel());
+			terrainObj.draw(point, wireframe);
 		}
 
 		//Set up Light Object
@@ -242,28 +233,16 @@ int main() {
 
 			if (ImGui::CollapsingHeader("Mesh Settings"))
 			{
-				if (ImGui::SliderInt("Plane Subdivisions", &planeSubdivision, 1, 64) ||
-					ImGui::InputFloat2("Plane Dimensions", &planeDimensions.x))
+				if (ImGui::SliderInt("Terrain Segments", &terrainSubdivision, 1, 64) ||
+					ImGui::SliderFloat("Terrain Size", &terrainSize, 1, 16) ||
+					ImGui::SliderFloat("Terrain Height", &heightScale, 1, 32))
 				{
-					plane = createPlane(planeDimensions.x, planeDimensions.y, planeSubdivision, false);
+					terrain = createTerrain(terrainSize, heightScale, terrainSubdivision);
 				}
-
-				if (ImGui::SliderInt("Cylinder Subdivisions", &cylinderSubdivision, 3, 64) ||
-					ImGui::InputFloat2("Cylinder Dimensions", &cylinderDimensions.x))
-				{
-					cylinder = createCylinder(cylinderDimensions.x, cylinderDimensions.y, cylinderSubdivision);
-				}
-
 				if (ImGui::SliderInt("Sphere Subdivisions", &sphereSubdivision, 3, 64) ||
 					ImGui::InputFloat("Sphere Radius", &sphereRadius))
 				{
 					sphere = createSphere(sphereRadius, sphereSubdivision);
-				}
-
-				if (ImGui::SliderInt("Torus Subdivisions", &torusSubdivision, 3, 64) ||
-					ImGui::InputFloat2("Torus Dimensions", &torusDimensions.x))
-				{
-					torus = createTorus(torusDimensions.x, torusDimensions.y, torusSubdivision);
 				}
 			}
 

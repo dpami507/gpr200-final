@@ -14,6 +14,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "Noise.h"
+
 namespace shaderz {
 	//Stores data for a single vertex
 	struct Vertex {
@@ -34,6 +36,7 @@ namespace shaderz {
 	MeshData createTorus(float radius, float thickness, int segments);
 	MeshData createTorus(float radius, float thickness, int segments);
 	MeshData createQuad(glm::vec3 bottomLeft, glm::vec3 bottomRight, glm::vec3 topRight, glm::vec3 topLeft);
+	MeshData createTerrain(float size, float heightScale, int segments);
 
 	class Mesh {
 	public:

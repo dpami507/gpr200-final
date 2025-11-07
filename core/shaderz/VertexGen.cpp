@@ -378,6 +378,66 @@ namespace shaderz {
 
 		return m;	
 	}
+	MeshData createTerrain(float size, float heightScale, int segments)
+	{
+		MeshData m;
+		int numOfVerticies = (segments + 1) * (segments + 1);
+		m.vertices.reserve(numOfVerticies);
+
+		//Create Verticies
+		for (size_t row = 0; row <= segments; row++)
+		{
+			for (size_t col = 0; col <= segments; col++)
+			{
+				Vertex v;
+				Noise n;
+
+				//Position
+				float xPos = size * ((float)col / segments) - (size / 2);
+				float zPos = size * ((float)row / segments) - (size / 2);
+				float yPos = n.PerlinNoise(glm::vec2(xPos, zPos), size);
+				v.pos.x = xPos;
+				v.pos.y = yPos * heightScale;
+				v.pos.z = zPos;
+
+				//Normal
+				v.normal = glm::vec3(0, 1, 0);
+
+				///UV
+				v.uv.x = (float)col / segments;
+				v.uv.y = 1 - ((float)row / segments);
+
+				m.vertices.push_back(v);
+			}
+		}
+
+		//Create indicies
+		for (size_t row = 0; row < segments; row++)
+		{
+			for (size_t col = 0; col < segments; col++)
+			{
+				//Bottom
+				GLuint bl = row * (segments + 1) + col;
+				GLuint br = bl + 1;
+
+				//Top
+				GLuint tl = bl + (segments + 1);
+				GLuint tr = tl + 1;
+
+				//Pushback
+				m.indices.push_back(bl);  //  tl-tr
+				m.indices.push_back(tl);  //  | /
+				m.indices.push_back(tr);  //  bl
+
+				//Pushback
+				m.indices.push_back(bl);  //     tr
+				m.indices.push_back(tr);  //    / |	
+				m.indices.push_back(br);  //  bl-br
+			}
+		}
+
+		return m;
+	}
 
 	//Creates a new OpenGL VAO, VBO, and EBO, filling the VBO with vertices, EBO with indices
 	Mesh::Mesh(const MeshData& meshData)
