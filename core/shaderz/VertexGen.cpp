@@ -378,11 +378,17 @@ namespace shaderz {
 
 		return m;	
 	}
-	MeshData createTerrain(float size, float heightScale, int segments)
+	MeshData createTerrain(float size, float heightScale, int segments, float noiseScale)
 	{
 		MeshData m;
+		Noise n;
+
+		std::vector<std::vector<float>> perlinMap = n.GeneratePerlinMap(size, segments, noiseScale, 4);
+
 		int numOfVerticies = (segments + 1) * (segments + 1);
 		m.vertices.reserve(numOfVerticies);
+
+		float sampleOffset = ((float)size / segments);
 
 		//Create Verticies
 		for (size_t row = 0; row <= segments; row++)
@@ -390,24 +396,42 @@ namespace shaderz {
 			for (size_t col = 0; col <= segments; col++)
 			{
 				Vertex v;
-				Noise n;
 
 				//Position
-				float xPos = size * ((float)col / segments) - (size / 2);
-				float zPos = size * ((float)row / segments) - (size / 2);
-				float yPos = n.PerlinNoise(glm::vec2(xPos, zPos), size);
-				v.pos.x = xPos;
-				v.pos.y = yPos * heightScale;
-				v.pos.z = zPos;
+				v.pos.x = size * ((float)col / segments) - (size / 2);
+				v.pos.y = perlinMap[row][col] * heightScale;
+				v.pos.z = size * ((float)row / segments) - (size / 2);
 
-				//Normal
-				v.normal = glm::vec3(0, 1, 0);
+				v.normal = glm::vec3(0.0, 1.0, 0.0);
 
 				///UV
 				v.uv.x = (float)col / segments;
 				v.uv.y = 1 - ((float)row / segments);
 
 				m.vertices.push_back(v);
+			}
+		}
+
+		for (size_t row = 0; row <= segments; row++)
+		{
+			for (size_t col = 0; col <= segments; col++)
+			{
+				//Clamp as to stop over indexing
+				int left = (col > 0) ? col - 1 : col;
+				int right = (col < segments) ? col + 1 : col;
+				int bottom = (row > 0) ? row - 1 : row;
+				int top = (row < segments) ? row + 1 : row;
+
+				float leftHeight = perlinMap[row][left];
+				float rightHeight = perlinMap[row][right];
+				float bottomHeight = perlinMap[bottom][col];
+				float topHeight = perlinMap[top][col];
+
+				float dx = (rightHeight - leftHeight) / (2.0f * (size / segments));
+				float dz = (topHeight - bottomHeight) / (2.0f * (size / segments));
+
+				glm::vec3 normal = { -dx * heightScale, 1.0f, -dz * heightScale };
+				m.vertices[row * (segments + 1) + col].normal = glm::normalize(normal);
 			}
 		}
 

@@ -58,6 +58,7 @@ float sphereRadius = 1;
 int terrainSubdivision = 1;
 float terrainSize = 1;
 float heightScale = 1;
+float noiseScale = 0.1;
 
 //Drawing Options
 int currShade = 2;
@@ -113,7 +114,7 @@ int main() {
 
 	//Create Primitive Meshes
 	Mesh sphere(createSphere(sphereRadius, sphereSubdivision));
-	Mesh terrain(createTerrain(terrainSize, heightScale, terrainSubdivision));
+	Mesh terrain(createTerrain(terrainSize, heightScale, terrainSubdivision, noiseScale));
 
 	//Light Object
 	Object lightObject(sphere);
@@ -195,7 +196,6 @@ int main() {
 			lightShader.setVec3("lightColor", lightColor);
 
 			//Set Model
-			lightObject.transform.position = glm::vec3(5 * cos(Time::time), 5 * sin(Time::time), 0);
 			lightShader.setMat4("model", lightObject.transform.GetModel());
 			lightObject.draw(point, wireframe);
 		}
@@ -233,11 +233,12 @@ int main() {
 
 			if (ImGui::CollapsingHeader("Mesh Settings"))
 			{
-				if (ImGui::SliderInt("Terrain Segments", &terrainSubdivision, 1, 64) ||
+				if (ImGui::SliderInt("Terrain Segments", &terrainSubdivision, 1, 512) ||
 					ImGui::SliderFloat("Terrain Size", &terrainSize, 1, 16) ||
-					ImGui::SliderFloat("Terrain Height", &heightScale, 1, 32))
+					ImGui::SliderFloat("Terrain Height", &heightScale, 1, 32) ||
+					ImGui::SliderFloat("Noise Scale", &noiseScale, 1, 32))
 				{
-					terrain = createTerrain(terrainSize, heightScale, terrainSubdivision);
+					terrain = createTerrain(terrainSize, heightScale, terrainSubdivision, noiseScale);
 				}
 				if (ImGui::SliderInt("Sphere Subdivisions", &sphereSubdivision, 3, 64) ||
 					ImGui::InputFloat("Sphere Radius", &sphereRadius))
