@@ -36,7 +36,7 @@ namespace shaderz {
 	MeshData createTorus(float radius, float thickness, int segments);
 	MeshData createTorus(float radius, float thickness, int segments);
 	MeshData createQuad(glm::vec3 bottomLeft, glm::vec3 bottomRight, glm::vec3 topRight, glm::vec3 topLeft);
-	MeshData createTerrain(float size, float heightScale, int segments, float noiseScale);
+	MeshData createTerrain(float size, float heightScale, int segments, float noiseScale, std::vector<std::vector<float>> perlinMap);
 	void calculateNormals(MeshData& m);
 
 	class Mesh {

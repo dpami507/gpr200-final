@@ -23,20 +23,17 @@ namespace shaderz {
         return glm::mix(topEdge, bottomEdge, localPos.y);
     }
 
-    float Noise::PerlinNoise(glm::vec2 position, int octaveCount)
+    float Noise::PerlinNoise(glm::vec2 position, int octaveCount, float persistence, float frequency, float amplitude)
     {
-        float persistence = 0.3f;
         float accumulatedNoise = 0.0f;
         float totalAmplitude = 0.0f;
-        float currentFrequency = 4.0f;
-        float currentAmplitude = 1.0f;
 
         for (int octave = 0; octave < 50; octave++)
         {
-            accumulatedNoise += currentAmplitude * GenNoise(position, currentFrequency);
-            currentFrequency *= 2.0f;
-            totalAmplitude += currentAmplitude;
-            currentAmplitude *= persistence;
+            accumulatedNoise += amplitude * GenNoise(position, frequency);
+            frequency *= 2.0f;
+            totalAmplitude += amplitude;
+            amplitude *= persistence;
 
             if (octave == octaveCount) break;
         }

@@ -58,7 +58,12 @@ float sphereRadius = 1;
 int terrainSubdivision = 1;
 float terrainSize = 1;
 float heightScale = 1;
+
 float noiseScale = 0.1;
+float persistence = 0.3;
+float frequency = 4.0;
+float amplitude = 1.0;
+int octaveCount = 4;
 
 //Drawing Options
 int currShade = 2;
@@ -114,7 +119,10 @@ int main() {
 
 	//Create Primitive Meshes
 	Mesh sphere(createSphere(sphereRadius, sphereSubdivision));
-	Mesh terrain(createTerrain(terrainSize, heightScale, terrainSubdivision, noiseScale));
+
+	Noise n;
+	std::vector<std::vector<float>> map = n.GeneratePerlinMap(terrainSize, terrainSubdivision, noiseScale, octaveCount, persistence, frequency, amplitude);
+	Mesh terrain(createTerrain(terrainSize, heightScale, terrainSubdivision, noiseScale, map));
 
 	//Light Object
 	Object lightObject(sphere);
@@ -233,17 +241,27 @@ int main() {
 
 			if (ImGui::CollapsingHeader("Mesh Settings"))
 			{
-				if (ImGui::SliderInt("Terrain Segments", &terrainSubdivision, 1, 512) ||
-					ImGui::SliderFloat("Terrain Size", &terrainSize, 1, 16) ||
-					ImGui::SliderFloat("Terrain Height", &heightScale, 1, 32) ||
-					ImGui::SliderFloat("Noise Scale", &noiseScale, 1, 32))
-				{
-					terrain = createTerrain(terrainSize, heightScale, terrainSubdivision, noiseScale);
-				}
 				if (ImGui::SliderInt("Sphere Subdivisions", &sphereSubdivision, 3, 64) ||
 					ImGui::InputFloat("Sphere Radius", &sphereRadius))
 				{
 					sphere = createSphere(sphereRadius, sphereSubdivision);
+				}
+			}
+
+			if (ImGui::CollapsingHeader("Terrain Settings"))
+			{
+				if (ImGui::SliderInt("Terrain Segments", &terrainSubdivision, 1, 512) ||
+					ImGui::SliderFloat("Terrain Size", &terrainSize, 1, 16) ||
+					ImGui::SliderFloat("Terrain Height", &heightScale, 1, 32) ||
+					ImGui::SliderFloat("Noise Scale", &noiseScale, 1, 32) ||
+					ImGui::SliderInt("Octave Count", &octaveCount, 1, 8) ||
+					ImGui::SliderFloat("Persistence", &persistence, 0, 8) ||
+					ImGui::SliderFloat("Frequency", &frequency, 0, 8) ||
+					ImGui::SliderFloat("Amplitude", &amplitude, 0, 8))
+				{
+					Noise n;
+					std::vector<std::vector<float>> map = n.GeneratePerlinMap(terrainSize, terrainSubdivision, noiseScale, octaveCount, persistence, frequency, amplitude);
+					terrain = createTerrain(terrainSize, heightScale, terrainSubdivision, noiseScale, map);
 				}
 			}
 

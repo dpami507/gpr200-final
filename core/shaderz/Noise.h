@@ -17,8 +17,8 @@ namespace shaderz {
 	public:
 		//Perlin Noise (https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83)
 		float GenNoise(glm::vec2 position, float frequency);
-		float PerlinNoise(glm::vec2 position, int octaveCount);
-		std::vector<std::vector<float>> GeneratePerlinMap(int size, int segments, float noiseScale, int octaveCount)
+		float PerlinNoise(glm::vec2 position, int octaveCount, float persistence = 0.3f, float frequency = 4.0, float amplitude = 1.0);
+		std::vector<std::vector<float>> GeneratePerlinMap(int size, int segments, float noiseScale, int octaveCount, float persistence, float frequency, float amplitude)
 		{
 			std::vector<std::vector<float>> map;
 			map.reserve(segments + 1);
@@ -31,7 +31,7 @@ namespace shaderz {
 				for (size_t y = 0; y <= segments; y++)
 				{
 					float yPos = ((float)y / segments) * size;
-					float height = PerlinNoise(glm::vec2(xPos, yPos) * noiseScale, octaveCount);
+					float height = PerlinNoise(glm::vec2(xPos, yPos) * noiseScale, octaveCount, persistence, frequency, amplitude);
 					yMap.push_back(height);
 				}
 

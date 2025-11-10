@@ -378,12 +378,9 @@ namespace shaderz {
 
 		return m;	
 	}
-	MeshData createTerrain(float size, float heightScale, int segments, float noiseScale)
+	MeshData createTerrain(float size, float heightScale, int segments, float noiseScale, std::vector<std::vector<float>> perlinMap)
 	{
 		MeshData m;
-		Noise n;
-
-		std::vector<std::vector<float>> perlinMap = n.GeneratePerlinMap(size, segments, noiseScale, 4);
 
 		int numOfVerticies = (segments + 1) * (segments + 1);
 		m.vertices.reserve(numOfVerticies);
@@ -421,11 +418,12 @@ namespace shaderz {
 				int right = (col < segments) ? col + 1 : col;
 				int bottom = (row > 0) ? row - 1 : row;
 				int top = (row < segments) ? row + 1 : row;
-
-				float leftHeight = perlinMap[row][left];
-				float rightHeight = perlinMap[row][right];
-				float bottomHeight = perlinMap[bottom][col];
-				float topHeight = perlinMap[top][col];
+				
+				//Get height of neighbor					// 	  T
+				float leftHeight = perlinMap[row][left];	// 	  |
+				float rightHeight = perlinMap[row][right];  //L---o---R
+				float bottomHeight = perlinMap[bottom][col];//	  |
+				float topHeight = perlinMap[top][col];		//	  B
 
 				float dx = (rightHeight - leftHeight) / (2.0f * (size / segments));
 				float dz = (topHeight - bottomHeight) / (2.0f * (size / segments));
