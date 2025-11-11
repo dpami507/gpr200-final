@@ -22,7 +22,6 @@
 #include "./shaderz/VertexGen.h"
 #include "./shaderz/Object.h"
 #include "./shaderz/PhysicsObject.h"
-#include "./shaderz/Noise.h"
 
 using namespace shaderz;
 
@@ -120,9 +119,13 @@ int main() {
 	//Create Primitive Meshes
 	Mesh sphere(createSphere(sphereRadius, sphereSubdivision));
 
-	Noise n;
-	std::vector<std::vector<float>> map = n.GeneratePerlinMap(terrainSize, terrainSubdivision, noiseScale, octaveCount, persistence, frequency, amplitude);
-	Mesh terrain(createTerrain(terrainSize, heightScale, terrainSubdivision, noiseScale, map));
+	FastNoiseLite noise;
+
+	noise.SetNoiseType(noise.NoiseType_Perlin);
+	noise.SetFrequency(frequency);
+	noise.SetFractalType(FastNoiseLite::FractalType_FBm);
+	noise.SetFractalOctaves(octaveCount);
+	Mesh terrain(createTerrain(terrainSize, terrainSubdivision, noise));
 
 	//Light Object
 	Object lightObject(sphere);
@@ -259,9 +262,14 @@ int main() {
 					ImGui::SliderFloat("Frequency", &frequency, 0, 8) ||
 					ImGui::SliderFloat("Amplitude", &amplitude, 0, 8))
 				{
-					Noise n;
-					std::vector<std::vector<float>> map = n.GeneratePerlinMap(terrainSize, terrainSubdivision, noiseScale, octaveCount, persistence, frequency, amplitude);
-					terrain = createTerrain(terrainSize, heightScale, terrainSubdivision, noiseScale, map);
+					FastNoiseLite noise;
+
+					noise.SetNoiseType(noise.NoiseType_Perlin);
+					noise.SetFrequency(frequency);
+					noise.SetFractalType(FastNoiseLite::FractalType_FBm);
+					noise.SetFractalOctaves(octaveCount);
+
+					terrain = createTerrain(terrainSize, terrainSubdivision, noise);
 				}
 			}
 

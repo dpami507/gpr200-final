@@ -378,7 +378,7 @@ namespace shaderz {
 
 		return m;	
 	}
-	MeshData createTerrain(float size, float heightScale, int segments, float noiseScale, std::vector<std::vector<float>> perlinMap)
+	MeshData createTerrain(float size, int segments, FastNoiseLite noise)
 	{
 		MeshData m;
 
@@ -394,42 +394,31 @@ namespace shaderz {
 			{
 				Vertex v;
 
-				//Position
-				v.pos.x = size * ((float)col / segments) - (size / 2);
-				v.pos.y = perlinMap[row][col] * heightScale;
-				v.pos.z = size * ((float)row / segments) - (size / 2);
+				float xPos = size * ((float)col / segments) - (size / 2);
+				float zPos = size * ((float)row / segments) - (size / 2);
 
-				v.normal = glm::vec3(0.0, 1.0, 0.0);
+				//Get height of neighbor											// 	  T
+				float leftHeight = noise.GetNoise(xPos - sampleOffset, zPos);		// 	  |
+				float rightHeight = noise.GetNoise(xPos + sampleOffset, zPos);		//L---o---R
+				float bottomHeight = noise.GetNoise(xPos, zPos - sampleOffset);		//	  |
+				float topHeight = noise.GetNoise(xPos, zPos + sampleOffset);		//	  B
+
+				float dx = (rightHeight - leftHeight) / (2.0f * sampleOffset);
+				float dz = (topHeight - bottomHeight) / (2.0f * sampleOffset);
+
+				glm::vec3 normal = { -dx, 1.0f, -dz };
+				v.normal = glm::normalize(normal);
+
+				//Position
+				v.pos.x = xPos;
+				v.pos.y = noise.GetNoise(xPos, zPos);
+				v.pos.z = zPos;
 
 				///UV
 				v.uv.x = (float)col / segments;
 				v.uv.y = 1 - ((float)row / segments);
 
 				m.vertices.push_back(v);
-			}
-		}
-
-		for (size_t row = 0; row <= segments; row++)
-		{
-			for (size_t col = 0; col <= segments; col++)
-			{
-				//Clamp as to stop over indexing
-				int left = (col > 0) ? col - 1 : col;
-				int right = (col < segments) ? col + 1 : col;
-				int bottom = (row > 0) ? row - 1 : row;
-				int top = (row < segments) ? row + 1 : row;
-				
-				//Get height of neighbor					// 	  T
-				float leftHeight = perlinMap[row][left];	// 	  |
-				float rightHeight = perlinMap[row][right];  //L---o---R
-				float bottomHeight = perlinMap[bottom][col];//	  |
-				float topHeight = perlinMap[top][col];		//	  B
-
-				float dx = (rightHeight - leftHeight) / (2.0f * (size / segments));
-				float dz = (topHeight - bottomHeight) / (2.0f * (size / segments));
-
-				glm::vec3 normal = { -dx * heightScale, 1.0f, -dz * heightScale };
-				m.vertices[row * (segments + 1) + col].normal = glm::normalize(normal);
 			}
 		}
 
