@@ -378,7 +378,7 @@ namespace shaderz {
 
 		return m;	
 	}
-	MeshData createTerrain(float size, int segments, FastNoiseLite noise)
+	MeshData createTerrain(float size, int segments, const FastNoiseLite& noise)
 	{
 		MeshData m;
 
@@ -409,9 +409,11 @@ namespace shaderz {
 				glm::vec3 normal = { -dx, 1.0f, -dz };
 				v.normal = glm::normalize(normal);
 
+				float distanceToCenter = sqrt(pow(xPos, 2) + pow(zPos, 2));
+
 				//Position
 				v.pos.x = xPos;
-				v.pos.y = noise.GetNoise(xPos, zPos);
+				v.pos.y = noise.GetNoise(xPos, zPos) - ((2 * distanceToCenter) / size);
 				v.pos.z = zPos;
 
 				///UV

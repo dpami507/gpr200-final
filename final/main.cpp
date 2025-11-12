@@ -22,6 +22,7 @@
 #include "./shaderz/VertexGen.h"
 #include "./shaderz/Object.h"
 #include "./shaderz/PhysicsObject.h"
+#include "./shaderz/Material.h"
 
 using namespace shaderz;
 
@@ -110,14 +111,19 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 	//Create Shaders
-	Shader objectShader("assets/lightingShader.vert", "assets/lightingShader.frag");
-	Shader lightShader("assets/lightObj.vert", "assets/lightObj.frag");
+	Shader litShader("assets/litShader.vert", "assets/litShader.frag");
+	Shader unlitShader("assets/unlitShader.vert", "assets/unlitShader.frag");
 
 	//Generate Texture
-	Texture2D worldTexture("assets/Brick.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D landTexture("assets/Grass.jpg", GL_NEAREST, GL_REPEAT);
+
+	LitMaterial landMaterial(&litShader, &landTexture, glm::vec3(255, 255, 255), ambientK, diffuseK, specularK, shininess);
+	UnlitMaterial waterMaterial(&unlitShader, nullptr, glm::vec3(0, 0, 255));
+	UnlitMaterial lightMaterial(&unlitShader, nullptr, glm::vec3(255, 255, 255));
 
 	//Create Primitive Meshes
 	Mesh sphere(createSphere(sphereRadius, sphereSubdivision));
+	Mesh plane(createPlane(terrainSize, terrainSize, terrainSubdivision, true));
 
 	FastNoiseLite noise;
 
@@ -135,17 +141,13 @@ int main() {
 
 	//Objects
 	Object terrainObj(terrain);
+	Object waterObj(plane);
 
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
 		//TO DO
 		// Create Global Settings
 		// -Lights (position, color, strength, falloff) <-- probably jsut make a light class
-		// 
-		// Material Classes (Lit/Unlit)
-		// -Take in a texture
-		// -Take in a color
-		// -Take in Diff, Spec, Shini (Leave out ambient that will be in a global setting)
 		// 
 		// Landscape
 		// -Use some decided noise to make hills and mountains
@@ -165,49 +167,49 @@ int main() {
 
 		//Setup objects
 		{
-			objectShader.use();
-
-			objectShader.setFloat("material.ambient", ambientK);
-			objectShader.setFloat("material.diffuse", diffuseK);
-			objectShader.setFloat("material.specular", specularK);
-			objectShader.setFloat("material.shininess", shininess);
-
-			//Set LightShader Uniforms
-			objectShader.setInt("shadingMode", currShade);
+			landMaterial.use();
 
 			//Light Settings
-			objectShader.setVec3("lightPos", lightObject.transform.position);
-			objectShader.setVec3("lightColor", lightColor);
+			litShader.setVec3("lightPos", lightObject.transform.position);
+			litShader.setVec3("lightColor", lightColor);
 
-			objectShader.setFloat("lightStrength", lightStrength);
-			objectShader.setFloat("lightFalloff", lightFalloff);
+			litShader.setFloat("lightStrength", lightStrength);
+			litShader.setFloat("lightFalloff", lightFalloff);
+
+			//Set LightShader Uniforms
+			litShader.setInt("shadingMode", currShade);
 
 			//Camera Projection
-			objectShader.setMat4("projectionView", camera.getProjectionView());
-			objectShader.setVec3("viewPos", camera.getPosition());
-			objectShader.setFloat("uTime", Time::time);
+			litShader.setMat4("projectionView", camera.getProjectionView());
+			litShader.setVec3("viewPos", camera.getPosition());
+			litShader.setFloat("uTime", Time::time);
 
-			//Plane
-			terrainObj.transform.position = glm::vec3(0, -1, 0);
-			terrainObj.transform.scale = glm::vec3(5, 1, 5);
-			objectShader.setMat4("model", terrainObj.transform.GetModel());
+			//Terrain
+			terrainObj.transform.position = glm::vec3(0, 0, 0);
+			litShader.setMat4("model", terrainObj.transform.GetModel());
 			terrainObj.draw(point, wireframe);
+
+			waterMaterial.use();
+
+			waterObj.transform.position = glm::vec3(0, -0.5, 0);
+			unlitShader.setMat4("model", waterObj.transform.GetModel());
+			waterObj.draw(point, wireframe);
 		}
 
 		//Set up Light Object
 		{
 			//Use Shader
-			lightShader.use();
+			lightMaterial.use();
 
 			//Camera Projection
-			lightShader.setMat4("projectionView", camera.getProjectionView());
+			unlitShader.setMat4("projectionView", camera.getProjectionView());
 
 			//Set Color
-			lightShader.setFloat("lightStrength", lightStrength);
-			lightShader.setVec3("lightColor", lightColor);
+			unlitShader.setFloat("lightStrength", lightStrength);
+			unlitShader.setVec3("lightColor", lightColor);
 
 			//Set Model
-			lightShader.setMat4("model", lightObject.transform.GetModel());
+			unlitShader.setMat4("model", lightObject.transform.GetModel());
 			lightObject.draw(point, wireframe);
 		}
 
@@ -255,12 +257,8 @@ int main() {
 			{
 				if (ImGui::SliderInt("Terrain Segments", &terrainSubdivision, 1, 512) ||
 					ImGui::SliderFloat("Terrain Size", &terrainSize, 1, 16) ||
-					ImGui::SliderFloat("Terrain Height", &heightScale, 1, 32) ||
-					ImGui::SliderFloat("Noise Scale", &noiseScale, 1, 32) ||
 					ImGui::SliderInt("Octave Count", &octaveCount, 1, 8) ||
-					ImGui::SliderFloat("Persistence", &persistence, 0, 8) ||
-					ImGui::SliderFloat("Frequency", &frequency, 0, 8) ||
-					ImGui::SliderFloat("Amplitude", &amplitude, 0, 8))
+					ImGui::SliderFloat("Frequency", &frequency, 0, 8))
 				{
 					FastNoiseLite noise;
 
@@ -270,6 +268,7 @@ int main() {
 					noise.SetFractalOctaves(octaveCount);
 
 					terrain = createTerrain(terrainSize, terrainSubdivision, noise);
+					plane = createPlane(terrainSize, terrainSize, terrainSubdivision, true);
 				}
 			}
 

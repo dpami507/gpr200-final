@@ -35,6 +35,19 @@ namespace shaderz {
 		}
 		stbi_image_free(data);
 	}
+	void Texture2D::DefaultTexture()
+	{
+		unsigned char data[] = { 255,255,255,255 };
+
+		GLuint whiteTextureID;
+		glGenTextures(1, &whiteTextureID);
+		glBindTexture(GL_TEXTURE_2D, whiteTextureID);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
 	Texture2D::~Texture2D()
 	{
 		glDeleteTextures(1, &m_id);

@@ -1,20 +1,20 @@
 #include "PhysicsObject.h"
 
 namespace shaderz {
-	PhyiscsObject::PhyiscsObject(Mesh& mesh, float mass, bool useGravity) : Object(mesh)
+	PhysicsObject::PhysicsObject(Mesh& mesh, float mass, bool useGravity) : Object(mesh)
 	{
 		this->useGravity = useGravity;
 		this->mass = mass;
 		std::cout << "Created Physics Object\n";
 	}
 
-	void PhyiscsObject::AddForce(glm::vec3& force)
+	void PhysicsObject::AddForce(glm::vec3& force)
 	{
 		glm::vec3 forceToAdd = force / mass;
 		acceleration += forceToAdd;
 	}
 
-	void PhyiscsObject::draw(bool drawAsPoints, bool drawWireframe)
+	void PhysicsObject::draw(bool drawAsPoints, bool drawWireframe)
 	{
 		if (useGravity)
 		{
@@ -22,6 +22,12 @@ namespace shaderz {
 			glm::vec3 forces = acceleration + deltaGravity;
 			velocity += forces;
 			acceleration = glm::vec3(0);
+		}
+
+		if (transform.position.y <= 0)
+		{
+			velocity.y = 0;
+			transform.position.y = 0;
 		}
 
 		transform.position += velocity * Time::deltaTime;

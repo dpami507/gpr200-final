@@ -7,10 +7,10 @@
 #include "Time.h"
 
 namespace shaderz {
-	class PhyiscsObject : public Object
+	class PhysicsObject : public Object
 	{
 	public:
-		PhyiscsObject(Mesh& mesh, float mass = 1, bool useGravity = true);
+		PhysicsObject(Mesh& mesh, float mass = 1, bool useGravity = true);
 		void AddForce(glm::vec3& force);
 
 		void draw(bool drawAsPoints = false, bool drawWireframe = false);
