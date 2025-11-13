@@ -9,6 +9,7 @@ uniform int shadingMode;
 
 // texture samplers
 uniform sampler2D texture1;
+uniform vec2 uvTiling;
 uniform vec3 color;
 
 //Material Controls
@@ -31,8 +32,13 @@ uniform float uTime;
 
 void main()
 {
+    vec2 uv = TexCoord;
+    uv.x *= uvTiling.x;
+    uv.y *= uvTiling.y;
+    uv = fract(uv);
+
 	//Texture
-	vec4 tex = texture(texture1, TexCoord);
+	vec4 tex = texture(texture1, uv);
 
 	//Set ambient Light
     vec3 ambient = material.ambient * lightColor;
@@ -62,7 +68,7 @@ void main()
 	//Normals
 	//Shaded
 	if(shadingMode == 0)
-		FragColor = vec4(TexCoord, 0.0, 1.0);
+		FragColor = vec4(uv, 0.0, 1.0);
     else if(shadingMode == 1)
 		FragColor = vec4(abs(Normal), 1.0);
 	else if(shadingMode == 2)

@@ -13,11 +13,12 @@ namespace shaderz {
     class LitMaterial
     {
     public:
-        LitMaterial(Shader* shader, Texture2D* texture, glm::vec3 color, float ambient, float diffuse, float specular, float shininess);
+        LitMaterial(Shader* shader, std::pair<Texture2D*, glm::vec2> texture, glm::vec3 color, float ambient, float diffuse, float specular, float shininess);
         void use();
     private:
         Shader* shader;
         Texture2D* texture;
+        glm::vec2 uvTiling;
         glm::vec3 color;
         float ambient;
         float diffuse;
@@ -28,11 +29,12 @@ namespace shaderz {
     class UnlitMaterial
     {
     public:
-        UnlitMaterial(Shader* shader, Texture2D* texture, glm::vec3 color);
+        UnlitMaterial(Shader* shader, std::pair<Texture2D*, glm::vec2> texture, glm::vec3 color);
         void use();
     private:
         Shader* shader;
         Texture2D* texture;
+        glm::vec2 uvTiling;
         glm::vec3 color;
     };
 }

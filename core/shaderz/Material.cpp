@@ -1,10 +1,11 @@
 #include "Material.h"
 
 namespace shaderz {
-	LitMaterial::LitMaterial(Shader* shader, Texture2D* texture, glm::vec3 color, float ambient, float diffuse, float specular, float shininess)
+	LitMaterial::LitMaterial(Shader* shader, std::pair<Texture2D*, glm::vec2> texture, glm::vec3 color, float ambient, float diffuse, float specular, float shininess)
 	{
 		this->shader = shader;
-		this->texture = texture;
+		this->texture = texture.first;
+		this->uvTiling = texture.second;
 		this->color = color;
 		this->ambient = ambient;
 		this->diffuse = diffuse;
@@ -23,6 +24,8 @@ namespace shaderz {
 		shader->setFloat("material.specular", specular);
 		shader->setFloat("material.shininess", shininess);
 
+		shader->setVec2("uvTiling", uvTiling);
+
 		if (texture != nullptr)
 			texture->Bind(0);
 		else
@@ -30,10 +33,11 @@ namespace shaderz {
 	}
 
 	
-	UnlitMaterial::UnlitMaterial(Shader* shader, Texture2D* texture, glm::vec3 color)
+	UnlitMaterial::UnlitMaterial(Shader* shader, std::pair<Texture2D*, glm::vec2> texture, glm::vec3 color)
 	{
 		this->shader = shader;
-		this->texture = texture;
+		this->texture = texture.first;
+		this->uvTiling = texture.second;
 		this->color = color;
 	}
 
@@ -41,6 +45,8 @@ namespace shaderz {
 	{
 		shader->use();
 		shader->setVec3("color", color);
+
+		shader->setVec2("uvTiling", uvTiling);
 
 		if(texture != nullptr)
 			texture->Bind(0);

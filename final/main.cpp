@@ -117,9 +117,9 @@ int main() {
 	//Generate Texture
 	Texture2D landTexture("assets/Grass.jpg", GL_NEAREST, GL_REPEAT);
 
-	LitMaterial landMaterial(&litShader, &landTexture, glm::vec3(255, 255, 255), ambientK, diffuseK, specularK, shininess);
-	UnlitMaterial waterMaterial(&unlitShader, nullptr, glm::vec3(0, 0, 255));
-	UnlitMaterial lightMaterial(&unlitShader, nullptr, glm::vec3(255, 255, 255));
+	LitMaterial landMaterial(&litShader, { &landTexture, glm::vec2(15) }, glm::vec3(255, 255, 255), ambientK, diffuseK, specularK, shininess);
+	UnlitMaterial waterMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(0, 0, 255));
+	UnlitMaterial lightMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(255, 255, 255));
 
 	//Create Primitive Meshes
 	Mesh sphere(createSphere(sphereRadius, sphereSubdivision));
