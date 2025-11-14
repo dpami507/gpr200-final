@@ -42,6 +42,18 @@ namespace shaderz {
 	public:
 		Mesh(const MeshData& meshData);
 		void draw(bool drawAsPoints = false, bool drawWireframe = false); //If drawAsPoints is true, use GL_POINTS instead of GL_TRIANGLES for the draw call
+		void load(const MeshData& meshData)
+		{
+			//Set new meshData sizes
+			m_numVertices = meshData.vertices.size();
+			m_numIndices = meshData.indices.size();
+			//VBO
+			glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+			glBufferData(GL_ARRAY_BUFFER, m_numVertices * sizeof(Vertex), &meshData.vertices[0], GL_DYNAMIC_DRAW);
+			//EBO
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_numIndices * sizeof(unsigned int), &meshData.indices[0], GL_DYNAMIC_DRAW);
+		}
 	private:
 		unsigned int m_vao, m_vbo, m_ebo;
 		unsigned int m_numVertices, m_numIndices;

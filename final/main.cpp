@@ -117,7 +117,7 @@ int main() {
 	//Generate Texture
 	Texture2D landTexture("assets/Grass.jpg", GL_NEAREST, GL_REPEAT);
 
-	LitMaterial landMaterial(&litShader, { &landTexture, glm::vec2(15) }, glm::vec3(255, 255, 255), ambientK, diffuseK, specularK, shininess);
+	LitMaterial landMaterial(&litShader, { &landTexture, glm::vec2(256) }, glm::vec3(255, 255, 255), ambientK, diffuseK, specularK, shininess);
 	UnlitMaterial waterMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(0, 0, 255));
 	UnlitMaterial lightMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(255, 255, 255));
 
@@ -134,7 +134,7 @@ int main() {
 	Mesh terrain(createTerrain(terrainSize, terrainSubdivision, noise));
 
 	//Light Object
-	Object lightObject(sphere);
+	PhysicsObject lightObject(sphere);
 	lightObject.transform.position = glm::vec3(0.0, 2.0, 0.0);
 	lightObject.transform.rotation = glm::vec3(0.0);
 	lightObject.transform.scale = glm::vec3(0.5);
@@ -150,7 +150,6 @@ int main() {
 		// -Lights (position, color, strength, falloff) <-- probably jsut make a light class
 		// 
 		// Landscape
-		// -Use some decided noise to make hills and mountains
 		// -Using the heights we can set different textures and colors for it
 		//
 
@@ -167,30 +166,29 @@ int main() {
 
 		//Setup objects
 		{
-			landMaterial.use();
-
-			//Light Settings
-			litShader.setVec3("lightPos", lightObject.transform.position);
-			litShader.setVec3("lightColor", lightColor);
-
-			litShader.setFloat("lightStrength", lightStrength);
-			litShader.setFloat("lightFalloff", lightFalloff);
-
-			//Set LightShader Uniforms
-			litShader.setInt("shadingMode", currShade);
-
-			//Camera Projection
+			//Set LitShader
+			litShader.use();
 			litShader.setMat4("projectionView", camera.getProjectionView());
 			litShader.setVec3("viewPos", camera.getPosition());
-			litShader.setFloat("uTime", Time::time);
+			litShader.setVec3("lightPos", lightObject.transform.position);
+			litShader.setVec3("lightColor", lightColor);
+			litShader.setFloat("lightStrength", lightStrength);
+			litShader.setFloat("lightFalloff", lightFalloff);
+			litShader.setInt("shadingMode", currShade);
+
+			//Set UnlitShader
+			unlitShader.use();
+			unlitShader.setMat4("projectionView", camera.getProjectionView());
+			unlitShader.setFloat("lightStrength", lightStrength);
+			unlitShader.setVec3("lightColor", lightColor);
 
 			//Terrain
+			landMaterial.use();
 			terrainObj.transform.position = glm::vec3(0, 0, 0);
 			litShader.setMat4("model", terrainObj.transform.GetModel());
 			terrainObj.draw(point, wireframe);
 
 			waterMaterial.use();
-
 			waterObj.transform.position = glm::vec3(0, -0.5, 0);
 			unlitShader.setMat4("model", waterObj.transform.GetModel());
 			waterObj.draw(point, wireframe);
@@ -200,15 +198,6 @@ int main() {
 		{
 			//Use Shader
 			lightMaterial.use();
-
-			//Camera Projection
-			unlitShader.setMat4("projectionView", camera.getProjectionView());
-
-			//Set Color
-			unlitShader.setFloat("lightStrength", lightStrength);
-			unlitShader.setVec3("lightColor", lightColor);
-
-			//Set Model
 			unlitShader.setMat4("model", lightObject.transform.GetModel());
 			lightObject.draw(point, wireframe);
 		}
@@ -249,7 +238,7 @@ int main() {
 				if (ImGui::SliderInt("Sphere Subdivisions", &sphereSubdivision, 3, 64) ||
 					ImGui::InputFloat("Sphere Radius", &sphereRadius))
 				{
-					sphere = createSphere(sphereRadius, sphereSubdivision);
+					sphere.load(createSphere(sphereRadius, sphereSubdivision));
 				}
 			}
 
@@ -267,8 +256,8 @@ int main() {
 					noise.SetFractalType(FastNoiseLite::FractalType_FBm);
 					noise.SetFractalOctaves(octaveCount);
 
-					terrain = createTerrain(terrainSize, terrainSubdivision, noise);
-					plane = createPlane(terrainSize, terrainSize, terrainSubdivision, true);
+					terrain.load(createTerrain(terrainSize, terrainSubdivision, noise));
+					plane.load(createPlane(terrainSize, terrainSize, terrainSubdivision, true));
 				}
 			}
 

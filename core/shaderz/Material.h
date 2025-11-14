@@ -9,6 +9,7 @@
 #include "Texture2D.h"
 #include "Shader.h"
 
+//David Amidon
 namespace shaderz {
     class LitMaterial
     {

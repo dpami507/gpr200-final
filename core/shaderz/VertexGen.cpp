@@ -378,6 +378,7 @@ namespace shaderz {
 
 		return m;	
 	}
+	//David Amidon
 	MeshData createTerrain(float size, int segments, const FastNoiseLite& noise)
 	{
 		MeshData m;
@@ -397,7 +398,7 @@ namespace shaderz {
 				float xPos = size * ((float)col / segments) - (size / 2);
 				float zPos = size * ((float)row / segments) - (size / 2);
 
-				//Get height of neighbor											// 	  T
+				//Get height of neighbors											// 	  T
 				float leftHeight = noise.GetNoise(xPos - sampleOffset, zPos);		// 	  |
 				float rightHeight = noise.GetNoise(xPos + sampleOffset, zPos);		//L---o---R
 				float bottomHeight = noise.GetNoise(xPos, zPos - sampleOffset);		//	  |
@@ -465,10 +466,10 @@ namespace shaderz {
 
 		//VBO
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-		glBufferData(GL_ARRAY_BUFFER, m_numVertices * sizeof(Vertex), &meshData.vertices[0], GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, m_numVertices * sizeof(Vertex), &meshData.vertices[0], GL_DYNAMIC_DRAW);
 		//EBO
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_numIndices * sizeof(unsigned int), &meshData.indices[0], GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_numIndices * sizeof(unsigned int), &meshData.indices[0], GL_DYNAMIC_DRAW);
 			
 		//Vertex Attributes
 		//Position

@@ -11,7 +11,6 @@ namespace shaderz {
     public:
         Texture2D(const char* filePath, int filterMode, int wrapMode);
         ~Texture2D();
-        void DefaultTexture();
         void Bind(unsigned int slot = 0); //Bind to a specific texture unit
     private:
         unsigned int m_id; //GL texture handle

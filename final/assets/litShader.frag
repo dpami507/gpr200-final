@@ -28,7 +28,6 @@ uniform float lightStrength;
 uniform float lightFalloff;
 
 uniform vec3 viewPos;
-uniform float uTime;
 
 void main()
 {

@@ -1,6 +1,24 @@
 #include "Material.h"
 
+//David Amidon
 namespace shaderz {
+
+	GLuint whiteTextureID;
+
+	void DefaultTexture()
+	{
+		std::cout << "Creating Default Texute\n";
+		unsigned char data[] = { 255,255,255,255 };
+
+		glGenTextures(1, &whiteTextureID);
+		glBindTexture(GL_TEXTURE_2D, whiteTextureID);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+
 	LitMaterial::LitMaterial(Shader* shader, std::pair<Texture2D*, glm::vec2> texture, glm::vec3 color, float ambient, float diffuse, float specular, float shininess)
 	{
 		this->shader = shader;
@@ -11,6 +29,7 @@ namespace shaderz {
 		this->diffuse = diffuse;
 		this->specular = specular;
 		this->shininess = shininess;
+		DefaultTexture();
 	}
 
 	void LitMaterial::use()
@@ -29,7 +48,7 @@ namespace shaderz {
 		if (texture != nullptr)
 			texture->Bind(0);
 		else
-			texture->DefaultTexture();
+			glBindTexture(GL_TEXTURE_2D, whiteTextureID);
 	}
 
 	
@@ -39,6 +58,7 @@ namespace shaderz {
 		this->texture = texture.first;
 		this->uvTiling = texture.second;
 		this->color = color;
+		DefaultTexture();
 	}
 
 	void UnlitMaterial::use()
@@ -48,9 +68,9 @@ namespace shaderz {
 
 		shader->setVec2("uvTiling", uvTiling);
 
-		if(texture != nullptr)
+		if (texture != nullptr)
 			texture->Bind(0);
 		else
-			texture->DefaultTexture();
+			glBindTexture(GL_TEXTURE_2D, whiteTextureID);
 	}
 }
