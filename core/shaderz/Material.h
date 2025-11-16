@@ -14,7 +14,8 @@ namespace shaderz {
     class LitMaterial
     {
     public:
-        LitMaterial(Shader* shader, std::pair<Texture2D*, glm::vec2> texture, glm::vec3 color, float ambient, float diffuse, float specular, float shininess);
+        LitMaterial(Shader* shader, std::pair<Texture2D*, glm::vec2> texture, const glm::vec3& color, const float& ambient, const float& diffuse, const float& specular, const float& shininess);
+        void updateMaterialSettings(const float& diffuse, const float& specular, const float& shininess);
         void use();
     private:
         Shader* shader;

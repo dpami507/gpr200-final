@@ -23,6 +23,7 @@
 #include "./shaderz/Object.h"
 #include "./shaderz/PhysicsObject.h"
 #include "./shaderz/Material.h"
+#include "./shaderz/Skybox.h"
 
 using namespace shaderz;
 
@@ -40,7 +41,7 @@ const int SCREEN_HEIGHT = 1000;
 int objCount = 4;
 
 //Material Settings
-float ambientK = 0.1;
+float ambientK = 1;
 float diffuseK = 1.0;
 float specularK = 1.0;
 int shininess = 16;
@@ -93,6 +94,7 @@ int main() {
 		return 1;
 	}
 
+	//Create Camera
 	Camera camera(window, glm::vec3(0.0f, 0.0f, 3.0f));
 
 	glfwMakeContextCurrent(window);
@@ -117,7 +119,7 @@ int main() {
 	//Generate Texture
 	Texture2D landTexture("assets/Grass.jpg", GL_NEAREST, GL_REPEAT);
 
-	LitMaterial landMaterial(&litShader, { &landTexture, glm::vec2(256) }, glm::vec3(255, 255, 255), ambientK, diffuseK, specularK, shininess);
+	LitMaterial landMaterial(&litShader, { &landTexture, glm::vec2(128) }, glm::vec3(255, 255, 255), ambientK, diffuseK, specularK, shininess);
 	UnlitMaterial waterMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(0, 0, 255));
 	UnlitMaterial lightMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(255, 255, 255));
 
@@ -134,7 +136,7 @@ int main() {
 	Mesh terrain(createTerrain(terrainSize, terrainSubdivision, noise));
 
 	//Light Object
-	PhysicsObject lightObject(sphere);
+	Object lightObject(sphere);
 	lightObject.transform.position = glm::vec3(0.0, 2.0, 0.0);
 	lightObject.transform.rotation = glm::vec3(0.0);
 	lightObject.transform.scale = glm::vec3(0.5);
@@ -143,14 +145,23 @@ int main() {
 	Object terrainObj(terrain);
 	Object waterObj(plane);
 
+	//Create Skybox
+	Shader skyboxShader("assets/skybox.vert", "assets/skybox.frag");
+	Skybox skybox(skyboxShader);
+	skybox.createSkybox();
+
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
 		//TO DO
 		// Create Global Settings
 		// -Lights (position, color, strength, falloff) <-- probably jsut make a light class
+		// -Directional Light
+		// -Or IMAGE BASED LIGHTING !!!!!!!
+		// -Point Light
 		// 
 		// Landscape
 		// -Using the heights we can set different textures and colors for it
+		//
 		//
 
 		//Culling
@@ -165,9 +176,12 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Setup objects
-		{
+		{	
 			//Set LitShader
 			litShader.use();
+
+			skybox.bind();
+			litShader.setInt("skybox", 1);
 			litShader.setMat4("projectionView", camera.getProjectionView());
 			litShader.setVec3("viewPos", camera.getPosition());
 			litShader.setVec3("lightPos", lightObject.transform.position);
@@ -189,7 +203,7 @@ int main() {
 			terrainObj.draw(point, wireframe);
 
 			waterMaterial.use();
-			waterObj.transform.position = glm::vec3(0, -0.5, 0);
+			waterObj.transform.position = glm::vec3(0, -2, 0);
 			unlitShader.setMat4("model", waterObj.transform.GetModel());
 			waterObj.draw(point, wireframe);
 		}
@@ -201,6 +215,12 @@ int main() {
 			unlitShader.setMat4("model", lightObject.transform.GetModel());
 			lightObject.draw(point, wireframe);
 		}
+
+		//Draw Skybox last
+		skyboxShader.use();
+		skyboxShader.setMat4("view", glm::mat4(glm::mat3(camera.getView())));
+		skyboxShader.setMat4("projection", camera.getProjection());
+		skybox.draw();
 
 		//ImGui
 		{
@@ -221,9 +241,12 @@ int main() {
 
 			if (ImGui::CollapsingHeader("Material Settings"))
 			{
-				ImGui::SliderFloat("Diffuse K", &diffuseK, 0.0f, 1.0f);
-				ImGui::SliderFloat("Specular K", &specularK, 0.0f, 1.0f);
-				ImGui::SliderInt("Shininess K", &shininess, 2.0f, 1024.0f);
+				if (ImGui::SliderFloat("Diffuse K", &diffuseK, 0.0f, 1.0f) ||
+					ImGui::SliderFloat("Specular K", &specularK, 0.0f, 1.0f) ||
+					ImGui::SliderInt("Shininess K", &shininess, 2.0f, 1024.0f))
+				{
+					landMaterial.updateMaterialSettings(diffuseK, specularK, shininess);
+				}
 			}
 
 			if (ImGui::CollapsingHeader("Geometry Settings"))

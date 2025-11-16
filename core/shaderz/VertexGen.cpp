@@ -398,23 +398,17 @@ namespace shaderz {
 				float xPos = size * ((float)col / segments) - (size / 2);
 				float zPos = size * ((float)row / segments) - (size / 2);
 
-				//Get height of neighbors											// 	  T
-				float leftHeight = noise.GetNoise(xPos - sampleOffset, zPos);		// 	  |
-				float rightHeight = noise.GetNoise(xPos + sampleOffset, zPos);		//L---o---R
-				float bottomHeight = noise.GetNoise(xPos, zPos - sampleOffset);		//	  |
-				float topHeight = noise.GetNoise(xPos, zPos + sampleOffset);		//	  B
+				glm::vec3 A = glm::vec3(xPos + sampleOffset, noise.GetNoise(xPos + sampleOffset, zPos), zPos);									// 	  A
+				glm::vec3 B = glm::vec3(xPos - sampleOffset, noise.GetNoise(xPos - sampleOffset, zPos - sampleOffset), zPos - sampleOffset);	//	 / \ 
+				glm::vec3 C = glm::vec3(xPos - sampleOffset, noise.GetNoise(xPos - sampleOffset, zPos + sampleOffset), zPos + sampleOffset);	//	B---C
 
-				float dx = (rightHeight - leftHeight) / (2.0f * sampleOffset);
-				float dz = (topHeight - bottomHeight) / (2.0f * sampleOffset);
-
-				glm::vec3 normal = { -dx, 1.0f, -dz };
-				v.normal = glm::normalize(normal);
+				v.normal = glm::normalize(glm::cross((B - A), (C - A)));
 
 				float distanceToCenter = sqrt(pow(xPos, 2) + pow(zPos, 2));
 
 				//Position
 				v.pos.x = xPos;
-				v.pos.y = noise.GetNoise(xPos, zPos) - ((2 * distanceToCenter) / size);
+				v.pos.y = (noise.GetNoise(xPos, zPos) - ((2 * distanceToCenter) / size)) * 5;
 				v.pos.z = zPos;
 
 				///UV

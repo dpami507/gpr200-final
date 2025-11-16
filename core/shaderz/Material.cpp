@@ -7,7 +7,7 @@ namespace shaderz {
 
 	void DefaultTexture()
 	{
-		std::cout << "Creating Default Texute\n";
+		std::cout << "Creating Default Texture\n";
 		unsigned char data[] = { 255,255,255,255 };
 
 		glGenTextures(1, &whiteTextureID);
@@ -19,7 +19,7 @@ namespace shaderz {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 
-	LitMaterial::LitMaterial(Shader* shader, std::pair<Texture2D*, glm::vec2> texture, glm::vec3 color, float ambient, float diffuse, float specular, float shininess)
+	LitMaterial::LitMaterial(Shader* shader, std::pair<Texture2D*, glm::vec2> texture, const glm::vec3& color, const float& ambient, const float& diffuse, const float& specular, const float& shininess)
 	{
 		this->shader = shader;
 		this->texture = texture.first;
@@ -30,6 +30,13 @@ namespace shaderz {
 		this->specular = specular;
 		this->shininess = shininess;
 		DefaultTexture();
+	}
+
+	void LitMaterial::updateMaterialSettings(const float& diffuse, const float& specular, const float& shininess)
+	{
+		this->diffuse = diffuse;
+		this->specular = specular;
+		this->shininess = shininess;
 	}
 
 	void LitMaterial::use()
