@@ -41,10 +41,10 @@ const int SCREEN_HEIGHT = 1000;
 int objCount = 4;
 
 //Material Settings
-float ambientK = 1;
-float diffuseK = 1.0;
-float specularK = 1.0;
-int shininess = 16;
+glm::vec3 ambientK = glm::vec3(1.0f, 0.5f, 0.31f);
+glm::vec3 diffuseK = glm::vec3(1.0f, 0.5f, 0.31f);
+glm::vec3 specularK = glm::vec3(0.5f, 0.5f, 0.5f);
+int shininess = 32;
 
 //Light Settings
 glm::vec3 lightColor = glm::vec3(1, 1, 1);
@@ -180,14 +180,15 @@ int main() {
 			//Set LitShader
 			litShader.use();
 
+			litShader.setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+			litShader.setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f)); // darken diffuse light a bit
+			litShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+
 			skybox.bind();
 			litShader.setInt("skybox", 1);
 			litShader.setMat4("projectionView", camera.getProjectionView());
 			litShader.setVec3("viewPos", camera.getPosition());
-			litShader.setVec3("lightPos", lightObject.transform.position);
-			litShader.setVec3("lightColor", lightColor);
-			litShader.setFloat("lightStrength", lightStrength);
-			litShader.setFloat("lightFalloff", lightFalloff);
+			litShader.setVec3("light.position", lightObject.transform.position);
 			litShader.setInt("shadingMode", currShade);
 
 			//Set UnlitShader
@@ -234,15 +235,13 @@ int main() {
 			{
 				ImGui::DragFloat3("Light Position", &lightObject.transform.position.x, 0.1f);
 				ImGui::ColorEdit3("Light Color", &lightColor.r);
-				ImGui::SliderFloat("Light Strength", &lightStrength, 0.0f, 2.0f);
-				ImGui::SliderFloat("Light Falloff", &lightFalloff, 0.0f, 15.0f);
-				ImGui::SliderFloat("Ambient K", &ambientK, 0.0f, 1.0f);
+				ImGui::DragFloat3("Ambient K", &ambientK.x, 1.0f);
 			}
 
 			if (ImGui::CollapsingHeader("Material Settings"))
 			{
-				if (ImGui::SliderFloat("Diffuse K", &diffuseK, 0.0f, 1.0f) ||
-					ImGui::SliderFloat("Specular K", &specularK, 0.0f, 1.0f) ||
+				if (ImGui::DragFloat3("Diffuse K", &diffuseK.x, 1.0f) ||
+					ImGui::DragFloat3("Specular K", &specularK.x, 1.0f) ||
 					ImGui::SliderInt("Shininess K", &shininess, 2.0f, 1024.0f))
 				{
 					landMaterial.updateMaterialSettings(diffuseK, specularK, shininess);
