@@ -15,7 +15,7 @@ set(CORE_INC_DIR
  CACHE PATH "CORE INCLUDE SOURCE PATH"
 )
 
-add_library(core STATIC ${CORE_SRC} ${CORE_INC}    "shaderz/Shader.h" "shaderz/Shader.cpp" "shaderz/Texture2D.h" "shaderz/Texture2D.cpp" "shaderz/Camera.h" "shaderz/Camera.cpp" "shaderz/Transform.h" "shaderz/Transform.cpp" "shaderz/Time.h"  "shaderz/VertexGen.h" "shaderz/Object.cpp" "shaderz/Object.h"   "shaderz/PhysicsObject.cpp" "shaderz/PhysicsObject.h" "shaderz/Time.cpp" "shaderz/Material.h" "shaderz/Material.cpp" "shaderz/Skybox.h" "shaderz/Skybox.cpp")
+add_library(core STATIC ${CORE_SRC} ${CORE_INC}    "shaderz/Shader.h" "shaderz/Shader.cpp" "shaderz/Texture2D.h" "shaderz/Texture2D.cpp" "shaderz/Camera.h" "shaderz/Camera.cpp" "shaderz/Transform.h" "shaderz/Transform.cpp" "shaderz/Time.h"  "shaderz/VertexGen.h" "shaderz/Object.cpp" "shaderz/Object.h"   "shaderz/PhysicsObject.cpp" "shaderz/PhysicsObject.h" "shaderz/Time.cpp" "shaderz/Material.h" "shaderz/Material.cpp" "shaderz/Skybox.h" "shaderz/Skybox.cpp" "shaderz/Terrain.h" "shaderz/Terrain.cpp")
 
 find_package(OpenGL REQUIRED)
 

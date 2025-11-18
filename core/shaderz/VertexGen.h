@@ -36,24 +36,14 @@ namespace shaderz {
 	MeshData createTorus(float radius, float thickness, int segments);
 	MeshData createTorus(float radius, float thickness, int segments);
 	MeshData createQuad(glm::vec3 bottomLeft, glm::vec3 bottomRight, glm::vec3 topRight, glm::vec3 topLeft);
-	MeshData createTerrain(float size, int segments, const FastNoiseLite& noise);
+	//David Amidon
+	MeshData createTerrain(float size, int segments, unsigned char* terrainTexture);
 
 	class Mesh {
 	public:
 		Mesh(const MeshData& meshData);
 		void draw(bool drawAsPoints = false, bool drawWireframe = false); //If drawAsPoints is true, use GL_POINTS instead of GL_TRIANGLES for the draw call
-		void load(const MeshData& meshData)
-		{
-			//Set new meshData sizes
-			m_numVertices = meshData.vertices.size();
-			m_numIndices = meshData.indices.size();
-			//VBO
-			glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-			glBufferData(GL_ARRAY_BUFFER, m_numVertices * sizeof(Vertex), &meshData.vertices[0], GL_DYNAMIC_DRAW);
-			//EBO
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_numIndices * sizeof(unsigned int), &meshData.indices[0], GL_DYNAMIC_DRAW);
-		}
+		void load(const MeshData& meshData);
 	private:
 		unsigned int m_vao, m_vbo, m_ebo;
 		unsigned int m_numVertices, m_numIndices;

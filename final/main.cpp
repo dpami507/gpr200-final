@@ -24,6 +24,7 @@
 #include "./shaderz/PhysicsObject.h"
 #include "./shaderz/Material.h"
 #include "./shaderz/Skybox.h"
+#include "./shaderz/Terrain.h"
 
 using namespace shaderz;
 
@@ -133,7 +134,8 @@ int main() {
 	noise.SetFrequency(frequency);
 	noise.SetFractalType(FastNoiseLite::FractalType_FBm);
 	noise.SetFractalOctaves(octaveCount);
-	Mesh terrain(createTerrain(terrainSize, terrainSubdivision, noise));
+
+	Terrain terrainObj(noise, terrainSize, terrainSubdivision);
 
 	//Light Object
 	Object lightObject(sphere);
@@ -142,7 +144,6 @@ int main() {
 	lightObject.transform.scale = glm::vec3(0.5);
 
 	//Objects
-	Object terrainObj(terrain);
 	Object waterObj(plane);
 
 	//Create Skybox
@@ -278,7 +279,7 @@ int main() {
 					noise.SetFractalType(FastNoiseLite::FractalType_FBm);
 					noise.SetFractalOctaves(octaveCount);
 
-					terrain.load(createTerrain(terrainSize, terrainSubdivision, noise));
+					terrainObj.load(terrainSize, terrainSubdivision, noise);
 					plane.load(createPlane(terrainSize, terrainSize, terrainSubdivision, true));
 				}
 			}

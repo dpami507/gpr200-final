@@ -378,15 +378,29 @@ namespace shaderz {
 
 		return m;	
 	}
-	//David Amidon
-	MeshData createTerrain(float size, int segments, const FastNoiseLite& noise)
+	MeshData createTerrain(float size, int segments, unsigned char* terrainTexture)
 	{
 		MeshData m;
 
+		int resolution = segments + 1;
 		int numOfVerticies = (segments + 1) * (segments + 1);
 		m.vertices.reserve(numOfVerticies);
 
 		float sampleOffset = ((float)size / segments);
+
+		auto getSample = [&](int r, int c) -> float {
+			r = std::max(0, std::min(r, segments));
+			c = std::max(0, std::min(c, segments));
+
+			float xPos = size * ((float)c / segments) - (size / 2);
+			float zPos = size * ((float)r / segments) - (size / 2);
+			float distanceToCenter = sqrt(pow(xPos, 2) + pow(zPos, 2));
+
+			unsigned char texValue = terrainTexture[r * (segments + 1) + c];
+			float height = ((texValue / 127.5f) - 1.0f) - (5 * distanceToCenter) / size;
+
+			return height;
+		};
 
 		//Create Verticies
 		for (size_t row = 0; row <= segments; row++)
@@ -398,18 +412,20 @@ namespace shaderz {
 				float xPos = size * ((float)col / segments) - (size / 2);
 				float zPos = size * ((float)row / segments) - (size / 2);
 
-				glm::vec3 A = glm::vec3(xPos + sampleOffset, noise.GetNoise(xPos + sampleOffset, zPos), zPos);									// 	  A
-				glm::vec3 B = glm::vec3(xPos - sampleOffset, noise.GetNoise(xPos - sampleOffset, zPos - sampleOffset), zPos - sampleOffset);	//	 / \ 
-				glm::vec3 C = glm::vec3(xPos - sampleOffset, noise.GetNoise(xPos - sampleOffset, zPos + sampleOffset), zPos + sampleOffset);	//	B---C
-
-				v.normal = glm::normalize(glm::cross((B - A), (C - A)));
-
-				float distanceToCenter = sqrt(pow(xPos, 2) + pow(zPos, 2));
-
 				//Position
 				v.pos.x = xPos;
-				v.pos.y = (noise.GetNoise(xPos, zPos) - ((2 * distanceToCenter) / size)) * 5;
+				v.pos.y = getSample(row, col);
 				v.pos.z = zPos;
+
+				float topHeight = getSample(row + 1, col);
+				float bottomLeftHeight = getSample(row - 1, col - 1);
+				float bottomRightHeight = getSample(row - 1, col + 1);
+
+				glm::vec3 A = glm::vec3(xPos + sampleOffset, topHeight, zPos);							// 	  A
+				glm::vec3 B = glm::vec3(xPos - sampleOffset, bottomLeftHeight, zPos - sampleOffset);	//	 /.\ 
+				glm::vec3 C = glm::vec3(xPos - sampleOffset, bottomRightHeight, zPos + sampleOffset);	//	B---C
+
+				v.normal = glm::normalize(glm::cross((B - A), (C - A)));
 
 				///UV
 				v.uv.x = (float)col / segments;
@@ -494,5 +510,19 @@ namespace shaderz {
 		glDrawElements(type, m_numIndices, GL_UNSIGNED_INT, 0);
 			
 		glBindVertexArray(0);
+	}
+
+	//Reloads MeshData to update values
+	void Mesh::load(const MeshData& meshData)
+	{
+		//Set new meshData sizes
+		m_numVertices = meshData.vertices.size();
+		m_numIndices = meshData.indices.size();
+		//VBO
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+		glBufferData(GL_ARRAY_BUFFER, m_numVertices * sizeof(Vertex), &meshData.vertices[0], GL_DYNAMIC_DRAW);
+		//EBO
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_numIndices * sizeof(unsigned int), &meshData.indices[0], GL_DYNAMIC_DRAW);
 	}
 }
