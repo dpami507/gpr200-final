@@ -41,12 +41,6 @@ const int SCREEN_HEIGHT = 1000;
 
 int objCount = 4;
 
-//Material Settings
-glm::vec3 ambientK = glm::vec3(1.0f, 0.5f, 0.31f);
-glm::vec3 diffuseK = glm::vec3(1.0f, 0.5f, 0.31f);
-glm::vec3 specularK = glm::vec3(0.5f, 0.5f, 0.5f);
-int shininess = 32;
-
 //Light Settings
 glm::vec3 lightColor = glm::vec3(1, 1, 1);
 float lightStrength = 1;
@@ -114,19 +108,23 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 	//Create Shaders
-	Shader litShader("assets/litShader.vert", "assets/litShader.frag");
+	Shader pbrShader("assets/PBR.vert", "assets/PBR.frag");
+	//Shader litShader("assets/litShader.vert", "assets/litShader.frag");
 	Shader unlitShader("assets/unlitShader.vert", "assets/unlitShader.frag");
 
 	//Generate Texture
-	Texture2D landTexture("assets/Grass.jpg", GL_NEAREST, GL_REPEAT);
-
-	LitMaterial landMaterial(&litShader, { &landTexture, glm::vec2(128) }, glm::vec3(255, 255, 255), ambientK, diffuseK, specularK, shininess);
+	Texture2D grassColor("assets/GrassColor.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D grassAO("assets/GrassAO.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D grassNorm("assets/GrassNorm.jpg", GL_NEAREST, GL_REPEAT);
+ 
+	PBRMaterial landMaterial(&pbrShader, glm::vec2(10.0f), &grassColor, nullptr, &grassNorm, nullptr, &grassAO);
 	UnlitMaterial waterMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(0, 0, 255));
 	UnlitMaterial lightMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(255, 255, 255));
 
 	//Create Primitive Meshes
 	Mesh sphere(createSphere(sphereRadius, sphereSubdivision));
 	Mesh plane(createPlane(terrainSize, terrainSize, terrainSubdivision, true));
+	Mesh tarus(createTorus(1, 0.5, 16));
 
 	FastNoiseLite noise;
 
@@ -145,6 +143,7 @@ int main() {
 
 	//Objects
 	Object waterObj(plane);
+	Object tarusObj(tarus);
 
 	//Create Skybox
 	Shader skyboxShader("assets/skybox.vert", "assets/skybox.frag");
@@ -179,18 +178,14 @@ int main() {
 		//Setup objects
 		{	
 			//Set LitShader
-			litShader.use();
+			pbrShader.use();
 
-			litShader.setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-			litShader.setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f)); // darken diffuse light a bit
-			litShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+			pbrShader.setVec3("lightPos", lightObject.transform.position);
+			pbrShader.setVec3("lightColor", lightColor);
+			pbrShader.setVec3("viewPos", camera.getPosition());
+			pbrShader.setMat4("projectionView", camera.getProjectionView());
 
 			skybox.bind();
-			litShader.setInt("skybox", 1);
-			litShader.setMat4("projectionView", camera.getProjectionView());
-			litShader.setVec3("viewPos", camera.getPosition());
-			litShader.setVec3("light.position", lightObject.transform.position);
-			litShader.setInt("shadingMode", currShade);
 
 			//Set UnlitShader
 			unlitShader.use();
@@ -201,8 +196,13 @@ int main() {
 			//Terrain
 			landMaterial.use();
 			terrainObj.transform.position = glm::vec3(0, 0, 0);
-			litShader.setMat4("model", terrainObj.transform.GetModel());
+			pbrShader.setMat4("model", terrainObj.transform.GetModel());
 			terrainObj.draw(point, wireframe);
+
+			landMaterial.use();
+			tarusObj.transform.position = glm::vec3(-5, 0, 0);
+			pbrShader.setMat4("model", tarusObj.transform.GetModel());
+			tarusObj.draw(point, wireframe);
 
 			waterMaterial.use();
 			waterObj.transform.position = glm::vec3(0, -2, 0);
@@ -236,17 +236,6 @@ int main() {
 			{
 				ImGui::DragFloat3("Light Position", &lightObject.transform.position.x, 0.1f);
 				ImGui::ColorEdit3("Light Color", &lightColor.r);
-				ImGui::DragFloat3("Ambient K", &ambientK.x, 1.0f);
-			}
-
-			if (ImGui::CollapsingHeader("Material Settings"))
-			{
-				if (ImGui::DragFloat3("Diffuse K", &diffuseK.x, 1.0f) ||
-					ImGui::DragFloat3("Specular K", &specularK.x, 1.0f) ||
-					ImGui::SliderInt("Shininess K", &shininess, 2.0f, 1024.0f))
-				{
-					landMaterial.updateMaterialSettings(diffuseK, specularK, shininess);
-				}
 			}
 
 			if (ImGui::CollapsingHeader("Geometry Settings"))

@@ -4,10 +4,8 @@ namespace shaderz {
     void Terrain::GenerateNoiseTexture(float size, int segments)
     {
         std::cout << "Creating Terrain Texture\n";
-        std::cout << "segments = " << segments << "\n";
 
         int numberofPoints = (segments + 1) * (segments + 1);
-        std::cout << "numberofPoints = " << numberofPoints << "\n";
 
         data = new unsigned char[numberofPoints];
 
@@ -24,17 +22,10 @@ namespace shaderz {
 
                 if (index > maxIndex) maxIndex = index;
 
-                if (index >= numberofPoints) {
-                    std::cout << "ERROR: index " << index << " >= " << numberofPoints
-                        << " at row=" << row << " col=" << col << "\n";
-                }
-
                 float noiseValue = noise.GetNoise(xPos + sampleOffset, zPos);
                 data[index] = (unsigned char)((noiseValue + 1.0f) * 127.5f);
             }
         }
-
-        std::cout << "Max index accessed: " << maxIndex << " (array size: " << numberofPoints << ")\n";
 
         glGenTextures(1, &terrainTextureID);
         glBindTexture(GL_TEXTURE_2D, terrainTextureID);
@@ -46,11 +37,12 @@ namespace shaderz {
 	Terrain::Terrain(const FastNoiseLite& noise, float size, int segments) : Object(*mesh)
 	{
 		this->noise = noise;
-		std::cout << "Created Terrain Object\n";
 
         GenerateNoiseTexture(size, segments);
 		MeshData terrainData = createTerrain(size, segments, data);
 		this->mesh = new Mesh(terrainData);
+
+		std::cout << "Created Terrain Object\n";
 	}
 
 	void Terrain::draw(bool drawAsPoints, bool drawWireframe)

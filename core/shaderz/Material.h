@@ -11,6 +11,22 @@
 
 //David Amidon
 namespace shaderz {
+    class PBRMaterial
+    {
+    public:
+        PBRMaterial(Shader* shader, glm::vec2 uv, Texture2D* albedo, Texture2D* roughness, Texture2D* normal, Texture2D* metallic, Texture2D* ao);
+        void use();
+    private:
+        Shader* shader;
+        glm::vec2 uvTiling;
+
+        Texture2D* albedo;
+        Texture2D* roughness;
+        Texture2D* normal;
+        Texture2D* metallic;
+        Texture2D* ao;
+    };
+
     class LitMaterial
     {
     public:
