@@ -116,8 +116,15 @@ int main() {
 	Texture2D grassColor("assets/GrassColor.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D grassAO("assets/GrassAO.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D grassNorm("assets/GrassNorm.jpg", GL_NEAREST, GL_REPEAT);
+
+	//Gold Texture
+	Texture2D goldColor("assets/GoldColor.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D goldMetal("assets/GoldMetal.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D goldNorm("assets/GoldNorm.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D goldRough("assets/GoldRough.jpg", GL_NEAREST, GL_REPEAT);
  
 	PBRMaterial landMaterial(&pbrShader, glm::vec2(10.0f), &grassColor, nullptr, &grassNorm, nullptr, &grassAO);
+	PBRMaterial goldMaterial(&pbrShader, glm::vec2(10.0f), &goldColor, &goldRough, &goldNorm, &goldMetal, nullptr);
 	UnlitMaterial waterMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(0, 0, 255));
 	UnlitMaterial lightMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(255, 255, 255));
 
@@ -147,7 +154,7 @@ int main() {
 
 	//Create Skybox
 	Shader skyboxShader("assets/skybox.vert", "assets/skybox.frag");
-	Skybox skybox(skyboxShader);
+	Skybox skybox(skyboxShader, "assets/sky.hdr");
 	skybox.createSkybox();
 
 	//Render loop
@@ -199,7 +206,7 @@ int main() {
 			pbrShader.setMat4("model", terrainObj.transform.GetModel());
 			terrainObj.draw(point, wireframe);
 
-			landMaterial.use();
+			goldMaterial.use();
 			tarusObj.transform.position = glm::vec3(-5, 0, 0);
 			pbrShader.setMat4("model", tarusObj.transform.GetModel());
 			tarusObj.draw(point, wireframe);
