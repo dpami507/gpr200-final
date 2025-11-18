@@ -4,6 +4,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace shaderz {
+
+	const int SCREEN_WIDTH = 1000;
+	const int SCREEN_HEIGHT = 1000;
+
 	class Camera
 	{
 	public:

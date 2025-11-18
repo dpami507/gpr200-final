@@ -35,9 +35,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-const int SCREEN_WIDTH = 1000;
-const int SCREEN_HEIGHT = 1000;
-
 int objCount = 4;
 
 //Material Settings
