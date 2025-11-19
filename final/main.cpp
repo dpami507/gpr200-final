@@ -112,7 +112,7 @@ int main() {
 	//Create Shaders
 	Shader pbrShader("assets/shaders/PBR.vert", "assets/shaders/PBR.frag");
 	//Shader litShader("assets/shaders/litShader.vert", "assets/shaders/litShader.frag");
-	Shader unlitShader("assets/shaders/unlitShader.vert", "assets/shaders/unlitShader.frag");
+	//Shader unlitShader("assets/shaders/unlitShader.vert", "assets/shaders/unlitShader.frag");
 	//Create Skybox
 	Shader conversionShader("assets/shaders/cubemap.vert", "assets/shaders/equirectangularToCube.frag");
 	Shader irradianceShader("assets/shaders/cubemap.vert", "assets/shaders/irradianceShader.frag");
@@ -122,8 +122,13 @@ int main() {
 
 	Skybox skybox(skyboxShader, irradianceShader, brdfShader, conversionShader, prefilterShader, "assets/sky.hdr");
 
+	pbrShader.use();
+	pbrShader.setMat4("projection", camera.getProjection());
 	skyboxShader.use();
-	skyboxShader.setInt("environmentMap", 0);
+	skyboxShader.setMat4("projection", camera.getProjection());
+
+	//skyboxShader.use();
+	//skyboxShader.setInt("environmentMap", 0);
 
 	//Grass Texture
 	Texture2D grassColor("assets/GrassColor.jpg", GL_NEAREST, GL_REPEAT);
@@ -138,8 +143,8 @@ int main() {
 
 	PBRMaterial landMaterial(&pbrShader, glm::vec2(1.0f), &grassColor, nullptr, &grassNorm, nullptr, &grassAO);
 	PBRMaterial goldMaterial(&pbrShader, glm::vec2(1.0f), &goldColor, &goldRough, &goldNorm, &goldMetal, nullptr);
-	UnlitMaterial waterMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(0, 0, 255));
-	UnlitMaterial lightMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(255, 255, 255));
+	//UnlitMaterial waterMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(0, 0, 255));
+	//UnlitMaterial lightMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(255, 255, 255));
 
 	//Create Primitive Meshes
 	Mesh sphere(createSphere(sphereRadius, sphereSubdivision));
@@ -167,11 +172,6 @@ int main() {
 
 	//Objects
 	Object waterObj(plane);
-
-	pbrShader.use();
-	pbrShader.setMat4("projection", camera.getProjection());
-	skyboxShader.use();
-	skyboxShader.setMat4("projection", camera.getProjection());
 
 	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -241,9 +241,9 @@ int main() {
 		//Set up Light Object
 		{
 			//Use Shader
-			lightMaterial.use();
-			unlitShader.setMat4("model", lightObject.transform.GetModel());
-			lightObject.draw(point, wireframe);
+			//lightMaterial.use();
+			//unlitShader.setMat4("model", lightObject.transform.GetModel());
+			//lightObject.draw(point, wireframe);
 		}
 
 		//Draw Skybox last

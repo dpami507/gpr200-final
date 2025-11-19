@@ -80,6 +80,15 @@ namespace shaderz {
 		createIrradianceMap();   // Diffuse
 		createPrefilterMap();    // Specular
 		createBRDF();            // BRDF LUT
+
+		std::cout << "hdrTexture: " << hdrTexture << "\n";
+		std::cout << "envCubemap: " << envCubemap << "\n";
+		std::cout << "irradianceMap: " << irradianceMap << "\n";
+		std::cout << "prefilterMap: " << prefilterMap << "\n";
+		std::cout << "brdfLUTTexture: " << brdfLUTTexture << "\n";
+
+		skyboxShader.use();
+		skyboxShader.setInt("environmentMap", 0);
 	}
 
 	void Skybox::createSkybox()
@@ -93,6 +102,8 @@ namespace shaderz {
 
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+		CheckError("SKYBOX");
 	}
 
 	//Create the framebuffer
@@ -107,6 +118,8 @@ namespace shaderz {
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
 
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		CheckError("FRAMEBUFFER");
 	}
 	//Load the HDR
 	void Skybox::loadHDR(const std::string& hdrFile)
@@ -133,6 +146,8 @@ namespace shaderz {
 		{
 			std::cout << "Failed to load HDR at path: " << hdrFile << std::endl;
 		}
+
+		CheckError("HDR_LOAD");
 	}
 	//Create the environmment cubemap
 	void Skybox::createEnvCubemap()
@@ -150,8 +165,10 @@ namespace shaderz {
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		CheckError("ENVIRONMENT");
 	}
 	//Convert the hdr to a cubemap
 	void Skybox::convertToCubemap()
@@ -161,18 +178,13 @@ namespace shaderz {
 		conversionShader->setInt("equirectangularMap", 0);
 		conversionShader->setMat4("projection", captureProjection);
 
+		//Idk which one to use
 		glActiveTexture(GL_TEXTURE0);
+		//glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, hdrTexture);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-		glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
-
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-			std::cout << "FBO incomplete!" << std::endl;
-
 		glViewport(0, 0, 512, 512);
+		glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 
 		for (unsigned int i = 0; i < 6; ++i)
 		{
@@ -180,15 +192,17 @@ namespace shaderz {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			//renderCube();
-			glBindVertexArray(skyboxVAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
+			renderCube();
+			//glBindVertexArray(skyboxVAO);
+			//glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+		CheckError("CUBEMAP");
 	}
 	//Create irradiance map
 	void Skybox::createIrradianceMap()
@@ -213,7 +227,9 @@ namespace shaderz {
 		irradianceShader->setInt("environmentMap", 0);
 		irradianceShader->setMat4("projection", captureProjection);
 
+		//Idk which one to use
 		glActiveTexture(GL_TEXTURE0);
+		//glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 
 		glViewport(0, 0, 32, 32);
@@ -232,6 +248,8 @@ namespace shaderz {
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		CheckError("IRRADIANCE");
 	}
 	//Create the prefilter map
 	void Skybox::createPrefilterMap()
@@ -247,17 +265,21 @@ namespace shaderz {
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
 		prefilterShader->use();
 		prefilterShader->setInt("environmentMap", 0);
 		prefilterShader->setMat4("projection", captureProjection);
 
+		//Idk which one to use
 		glActiveTexture(GL_TEXTURE0);
+		//glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 		unsigned int maxMipLevels = 5;
+
 		for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
 		{
 			// reisze framebuffer according to mip-level size.
@@ -269,6 +291,8 @@ namespace shaderz {
 
 			float roughness = (float)mip / (float)(maxMipLevels - 1);
 			prefilterShader->setFloat("roughness", roughness);
+
+			//The error is in here
 			for (unsigned int i = 0; i < 6; ++i)
 			{
 				prefilterShader->setMat4("view", captureViews[i]);
@@ -282,6 +306,8 @@ namespace shaderz {
 			}
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		CheckError("PREFILTER");
 	}
 	//create the BRDF
 	void Skybox::createBRDF()
@@ -307,6 +333,8 @@ namespace shaderz {
 		renderQuad();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		CheckError("BRDF");
 	}
 
 	void Skybox::renderQuad()
@@ -410,6 +438,8 @@ namespace shaderz {
 		glBindVertexArray(cubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
+
+		CheckError("RENDER_CUBE");
 	}
 
 	void Skybox::bindIBL(Shader& pbrShader)
@@ -444,7 +474,31 @@ namespace shaderz {
 		//glDrawArrays(GL_TRIANGLES, 0, 36);
 		//glBindVertexArray(0);
 		renderCube();
+		CheckError("DRAW");
 
 		glDepthFunc(GL_LESS);
+	}
+
+	void Skybox::CheckError(std::string location)
+	{
+		GLenum err;
+		while ((err = glGetError()) != GL_NO_ERROR)
+		{
+			std::string error = "";
+
+			switch (err)
+			{
+			case GL_INVALID_ENUM:                  error = "INVALID_ENUM"; break;
+			case GL_INVALID_VALUE:                 error = "INVALID_VALUE"; break;
+			case GL_INVALID_OPERATION:             error = "INVALID_OPERATION"; break;
+			case GL_STACK_OVERFLOW:                error = "STACK_OVERFLOW"; break;
+			case GL_STACK_UNDERFLOW:               error = "STACK_UNDERFLOW"; break;
+			case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
+			case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
+			}
+
+			std::cout << "ERROR_" << location << ": " << error << "\n";
+			// Process/log the error.
+		}
 	}
 }

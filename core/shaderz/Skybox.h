@@ -38,6 +38,8 @@ namespace shaderz {
 		void convertToCubemap();
 		void draw(const glm::mat4& projection, const glm::mat4& view);
 
+		void CheckError(std::string location);
+
 		unsigned int envCubemap;
 		unsigned int irradianceMap;
 		unsigned int prefilterMap;
