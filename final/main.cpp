@@ -190,14 +190,14 @@ int main() {
 		//
 
 		//Culling
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
+		//glEnable(GL_CULL_FACE);
+		//glCullFace(GL_BACK);
 
 		//Update Time
 		Time::Update();
 
 		//Clear framebuffer
-		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+		glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Setup objects
@@ -241,21 +241,29 @@ int main() {
 		//Set up Light Object
 		{
 			//Use Shader
-			//lightMaterial.use();
-			//unlitShader.setMat4("model", lightObject.transform.GetModel());
-			//lightObject.draw(point, wireframe);
+			lightMaterial.use();
+			unlitShader.setMat4("model", lightObject.transform.GetModel());
+			lightObject.draw(point, wireframe);
 		}
 
 		//Draw Skybox last
-		glDisable(GL_CULL_FACE);
+		//glDisable(GL_CULL_FACE);
 		glDepthFunc(GL_LEQUAL);
 
 		skyboxShader.use();
+		skyboxShader.setMat4("projection", camera.getProjection());
 		skyboxShader.setMat4("view", camera.getView());
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.envCubemap);
-		skybox.renderCube();
-		//skybox.draw(camera.getProjection(), camera.getView());
+		//skybox.renderCube();
+		skybox.draw(camera.getProjection(), camera.getView());
+
+		// skybox cube
+		//glBindVertexArray(skybox.skyboxVAO);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glBindVertexArray(0);
+
+		glDepthFunc(GL_LESS);
 
 		//ImGui
 		{

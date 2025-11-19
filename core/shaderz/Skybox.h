@@ -42,8 +42,8 @@ namespace shaderz {
 		unsigned int irradianceMap;
 		unsigned int prefilterMap;
 		unsigned int brdfLUTTexture;
-	private:
 		unsigned int skyboxVAO, skyboxVBO;
+	private:
 		unsigned int captureFBO, captureRBO;
 
 		unsigned int hdrTexture;
