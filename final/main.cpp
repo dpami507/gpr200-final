@@ -106,11 +106,24 @@ int main() {
 	ImGui_ImplOpenGL3_Init();
 
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 	//Create Shaders
-	Shader pbrShader("assets/PBR.vert", "assets/PBR.frag");
-	//Shader litShader("assets/litShader.vert", "assets/litShader.frag");
-	Shader unlitShader("assets/unlitShader.vert", "assets/unlitShader.frag");
+	Shader pbrShader("assets/shaders/PBR.vert", "assets/shaders/PBR.frag");
+	//Shader litShader("assets/shaders/litShader.vert", "assets/shaders/litShader.frag");
+	Shader unlitShader("assets/shaders/unlitShader.vert", "assets/shaders/unlitShader.frag");
+	//Create Skybox
+	Shader conversionShader("assets/shaders/cubemap.vert", "assets/shaders/equirectangularToCube.frag");
+	Shader irradianceShader("assets/shaders/cubemap.vert", "assets/shaders/irradianceShader.frag");
+	Shader prefilterShader("assets/shaders/cubemap.vert", "assets/shaders/prefilter.frag");
+	Shader brdfShader("assets/shaders/brdf.vert", "assets/shaders/brdf.frag");
+	Shader skyboxShader("assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
+
+	Skybox skybox(skyboxShader, irradianceShader, brdfShader, conversionShader, prefilterShader, "assets/sky.hdr");
+
+	skyboxShader.use();
+	skyboxShader.setInt("environmentMap", 0);
 
 	//Grass Texture
 	Texture2D grassColor("assets/GrassColor.jpg", GL_NEAREST, GL_REPEAT);
@@ -123,8 +136,8 @@ int main() {
 	Texture2D goldNorm("assets/GoldNorm.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D goldRough("assets/GoldRough.jpg", GL_NEAREST, GL_REPEAT);
 
-	PBRMaterial landMaterial(&pbrShader, glm::vec2(10.0f), &grassColor, nullptr, &grassNorm, nullptr, &grassAO);
-	PBRMaterial goldMaterial(&pbrShader, glm::vec2(10.0f), &goldColor, &goldRough, &goldNorm, &goldMetal, nullptr);
+	PBRMaterial landMaterial(&pbrShader, glm::vec2(1.0f), &grassColor, nullptr, &grassNorm, nullptr, &grassAO);
+	PBRMaterial goldMaterial(&pbrShader, glm::vec2(1.0f), &goldColor, &goldRough, &goldNorm, &goldMetal, nullptr);
 	UnlitMaterial waterMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(0, 0, 255));
 	UnlitMaterial lightMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(255, 255, 255));
 
@@ -134,12 +147,10 @@ int main() {
 	Mesh plane(createPlane(terrainSize, terrainSize, terrainSubdivision, true));
 
 	FastNoiseLite noise;
-
 	noise.SetNoiseType(noise.NoiseType_Perlin);
 	noise.SetFrequency(frequency);
 	noise.SetFractalType(FastNoiseLite::FractalType_FBm);
 	noise.SetFractalOctaves(octaveCount);
-
 	Terrain terrainObj(noise, terrainSize, terrainSubdivision);
 
 	//Test Object
@@ -157,13 +168,10 @@ int main() {
 	//Objects
 	Object waterObj(plane);
 
-	//Create Skybox
-	Shader conversionShader("assets/cubemap.vert", "assets/equirectangularToCube.frag");
-	Shader irradianceShader("assets/cubemap.vert", "assets/irradianceShader.frag");
-	Shader prefilterShader("assets/cubemap.vert", "assets/prefilter.frag");
-	Shader brdfShader("assets/brdf.vert", "assets/brdf.frag");
-	Shader skyboxShader("assets/skybox.vert", "assets/skybox.frag");
-	Skybox skybox(skyboxShader, irradianceShader, brdfShader, conversionShader, prefilterShader, "assets/sky.hdr");
+	pbrShader.use();
+	pbrShader.setMat4("projection", camera.getProjection());
+	skyboxShader.use();
+	skyboxShader.setMat4("projection", camera.getProjection());
 
 	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -196,48 +204,58 @@ int main() {
 		{	
 			//Set LitShader
 			pbrShader.use();
+			pbrShader.setMat4("projectionView", camera.getProjectionView());
+
+			//I think the PBRMaterial.use does this
+			//skybox.bindIBL(pbrShader);
 
 			pbrShader.setVec3("lightPos", lightObject.transform.position);
 			pbrShader.setVec3("lightColor", lightColor);
 			pbrShader.setVec3("viewPos", camera.getPosition());
 			pbrShader.setMat4("projectionView", camera.getProjectionView());
 
-			skybox.bindIBL(pbrShader);
-
-			//Set UnlitShader
-			unlitShader.use();
-			unlitShader.setMat4("projectionView", camera.getProjectionView());
-			unlitShader.setFloat("lightStrength", lightStrength);
-			unlitShader.setVec3("lightColor", lightColor);
-
-			//Terrain
-			goldMaterial.use(skybox.irradianceMap, skybox.prefilterMap, skybox.brdfLUTTexture);
-			terrainObj.transform.position = glm::vec3(0, 0, 0);
-			pbrShader.setMat4("model", terrainObj.transform.GetModel());
-			terrainObj.draw(point, wireframe);
-
 			//Test
-			goldMaterial.use(skybox.irradianceMap, skybox.prefilterMap, skybox.brdfLUTTexture);
+			landMaterial.use(skybox.irradianceMap, skybox.prefilterMap, skybox.brdfLUTTexture);
 			orbObj.transform.position = glm::vec3(0, 0, 0);
 			pbrShader.setMat4("model", orbObj.transform.GetModel());
 			orbObj.draw(point, wireframe);
 
-			waterMaterial.use();
-			waterObj.transform.position = glm::vec3(0, -2, 0);
-			unlitShader.setMat4("model", waterObj.transform.GetModel());
-			waterObj.draw(point, wireframe);
+			//Set UnlitShader
+			//unlitShader.use();
+			//unlitShader.setMat4("projectionView", camera.getProjectionView());
+			//unlitShader.setFloat("lightStrength", lightStrength);
+			//unlitShader.setVec3("lightColor", lightColor);
+
+			//Terrain
+			//landMaterial.use(skybox.irradianceMap, skybox.prefilterMap, skybox.brdfLUTTexture);
+			//terrainObj.transform.position = glm::vec3(0, 0, 0);
+			//pbrShader.setMat4("model", terrainObj.transform.GetModel());
+			//terrainObj.draw(point, wireframe);
+
+			//waterMaterial.use();
+			//waterObj.transform.position = glm::vec3(0, -2, 0);
+			//unlitShader.setMat4("model", waterObj.transform.GetModel());
+			//waterObj.draw(point, wireframe);
 		}
 
 		//Set up Light Object
 		{
 			//Use Shader
-			lightMaterial.use();
-			unlitShader.setMat4("model", lightObject.transform.GetModel());
-			lightObject.draw(point, wireframe);
+			//lightMaterial.use();
+			//unlitShader.setMat4("model", lightObject.transform.GetModel());
+			//lightObject.draw(point, wireframe);
 		}
 
 		//Draw Skybox last
-		skybox.draw(camera.getProjection(), camera.getView());
+		glDisable(GL_CULL_FACE);
+		glDepthFunc(GL_LEQUAL);
+
+		skyboxShader.use();
+		skyboxShader.setMat4("view", camera.getView());
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.envCubemap);
+		skybox.renderCube();
+		//skybox.draw(camera.getProjection(), camera.getView());
 
 		//ImGui
 		{

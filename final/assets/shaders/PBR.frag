@@ -34,9 +34,6 @@ vec3 getNormalFromMap();
 
 void main()
 {
-    FragColor = vec4(1, 0, 0, 1);
-    return;
-
     uv = TexCoord;
     uv.x *= uvTiling.x;
     uv.y *= uvTiling.y;

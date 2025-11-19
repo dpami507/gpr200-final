@@ -24,6 +24,7 @@ namespace shaderz {
 			Shader& brdfShader, Shader& conversionShader, const std::string& hdrFile);
 		void loadHDR(const std::string& hdrFile);
 		void createSkybox();
+
 		void createEnvCubemap();
 		void createFramebuffer();
 		void createIrradianceMap();
@@ -31,11 +32,13 @@ namespace shaderz {
 
 		void createBRDF();
 		void renderQuad();
+		void renderCube();
 
 		void bindIBL(Shader& pbrShader);
 		void convertToCubemap();
 		void draw(const glm::mat4& projection, const glm::mat4& view);
 
+		unsigned int envCubemap;
 		unsigned int irradianceMap;
 		unsigned int prefilterMap;
 		unsigned int brdfLUTTexture;
@@ -43,7 +46,6 @@ namespace shaderz {
 		unsigned int skyboxVAO, skyboxVBO;
 		unsigned int captureFBO, captureRBO;
 
-		unsigned int envCubemap;
 		unsigned int hdrTexture;
 
 		unsigned int textureID;
@@ -51,6 +53,8 @@ namespace shaderz {
 
 		unsigned int quadVAO = 0;
 		unsigned int quadVBO;
+		unsigned int cubeVAO = 0;
+		unsigned int cubeVBO = 0;
 
 		Shader* brdfShader;
 		Shader* skyboxShader;
