@@ -112,17 +112,17 @@ int main() {
 	//Shader litShader("assets/litShader.vert", "assets/litShader.frag");
 	Shader unlitShader("assets/unlitShader.vert", "assets/unlitShader.frag");
 
-	//Generate Texture
+	//Grass Texture
 	Texture2D grassColor("assets/GrassColor.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D grassAO("assets/GrassAO.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D grassNorm("assets/GrassNorm.jpg", GL_NEAREST, GL_REPEAT);
-
+ 
 	//Gold Texture
 	Texture2D goldColor("assets/GoldColor.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D goldMetal("assets/GoldMetal.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D goldNorm("assets/GoldNorm.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D goldRough("assets/GoldRough.jpg", GL_NEAREST, GL_REPEAT);
- 
+
 	PBRMaterial landMaterial(&pbrShader, glm::vec2(10.0f), &grassColor, nullptr, &grassNorm, nullptr, &grassAO);
 	PBRMaterial goldMaterial(&pbrShader, glm::vec2(10.0f), &goldColor, &goldRough, &goldNorm, &goldMetal, nullptr);
 	UnlitMaterial waterMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(0, 0, 255));
@@ -130,8 +130,8 @@ int main() {
 
 	//Create Primitive Meshes
 	Mesh sphere(createSphere(sphereRadius, sphereSubdivision));
+	Mesh orb(createSphere(1, 32));
 	Mesh plane(createPlane(terrainSize, terrainSize, terrainSubdivision, true));
-	Mesh tarus(createTorus(1, 0.5, 16));
 
 	FastNoiseLite noise;
 
@@ -142,6 +142,12 @@ int main() {
 
 	Terrain terrainObj(noise, terrainSize, terrainSubdivision);
 
+	//Test Object
+	Object orbObj(orb);
+	orbObj.transform.position = glm::vec3(5.0, 2.0, 0.0);
+	orbObj.transform.rotation = glm::vec3(0.0);
+	orbObj.transform.scale = glm::vec3(0.5);
+
 	//Light Object
 	Object lightObject(sphere);
 	lightObject.transform.position = glm::vec3(0.0, 2.0, 0.0);
@@ -150,12 +156,16 @@ int main() {
 
 	//Objects
 	Object waterObj(plane);
-	Object tarusObj(tarus);
 
 	//Create Skybox
+	Shader conversionShader("assets/cubemap.vert", "assets/equirectangularToCube.frag");
+	Shader irradianceShader("assets/cubemap.vert", "assets/irradianceShader.frag");
+	Shader prefilterShader("assets/cubemap.vert", "assets/prefilter.frag");
+	Shader brdfShader("assets/brdf.vert", "assets/brdf.frag");
 	Shader skyboxShader("assets/skybox.vert", "assets/skybox.frag");
-	Skybox skybox(skyboxShader, "assets/sky.hdr");
-	skybox.createSkybox();
+	Skybox skybox(skyboxShader, irradianceShader, brdfShader, conversionShader, prefilterShader, "assets/sky.hdr");
+
+	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -192,7 +202,7 @@ int main() {
 			pbrShader.setVec3("viewPos", camera.getPosition());
 			pbrShader.setMat4("projectionView", camera.getProjectionView());
 
-			skybox.bind();
+			skybox.bindIBL(pbrShader);
 
 			//Set UnlitShader
 			unlitShader.use();
@@ -201,15 +211,16 @@ int main() {
 			unlitShader.setVec3("lightColor", lightColor);
 
 			//Terrain
-			landMaterial.use();
+			goldMaterial.use(skybox.irradianceMap, skybox.prefilterMap, skybox.brdfLUTTexture);
 			terrainObj.transform.position = glm::vec3(0, 0, 0);
 			pbrShader.setMat4("model", terrainObj.transform.GetModel());
 			terrainObj.draw(point, wireframe);
 
-			goldMaterial.use();
-			tarusObj.transform.position = glm::vec3(-5, 0, 0);
-			pbrShader.setMat4("model", tarusObj.transform.GetModel());
-			tarusObj.draw(point, wireframe);
+			//Test
+			goldMaterial.use(skybox.irradianceMap, skybox.prefilterMap, skybox.brdfLUTTexture);
+			orbObj.transform.position = glm::vec3(0, 0, 0);
+			pbrShader.setMat4("model", orbObj.transform.GetModel());
+			orbObj.draw(point, wireframe);
 
 			waterMaterial.use();
 			waterObj.transform.position = glm::vec3(0, -2, 0);
@@ -226,10 +237,7 @@ int main() {
 		}
 
 		//Draw Skybox last
-		skyboxShader.use();
-		skyboxShader.setMat4("view", glm::mat4(glm::mat3(camera.getView())));
-		skyboxShader.setMat4("projection", camera.getProjection());
-		skybox.draw();
+		skybox.draw(camera.getProjection(), camera.getView());
 
 		//ImGui
 		{
