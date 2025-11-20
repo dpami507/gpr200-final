@@ -30,6 +30,7 @@ namespace shaderz {
         glGenTextures(1, &terrainTextureID);
         glBindTexture(GL_TEXTURE_2D, terrainTextureID);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, segments + 1, segments + 1, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }

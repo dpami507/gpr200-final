@@ -120,7 +120,7 @@ int main() {
 	Shader brdfShader("assets/shaders/brdf.vert", "assets/shaders/brdf.frag");
 	Shader skyboxShader("assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
 
-	Skybox skybox(skyboxShader, irradianceShader, brdfShader, conversionShader, prefilterShader, "assets/sky.hdr");
+	Skybox skybox(skyboxShader, irradianceShader, brdfShader, conversionShader, prefilterShader, "assets/warm.hdr");
 
 	pbrShader.use();
 	pbrShader.setMat4("projection", camera.getProjection());
