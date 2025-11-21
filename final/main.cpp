@@ -115,17 +115,16 @@ int main() {
 	Shader unlitShader("assets/shaders/unlitShader.vert", "assets/shaders/unlitShader.frag");
 	//Create Skybox
 	Shader conversionShader("assets/shaders/cubemap.vert", "assets/shaders/equirectangularToCube.frag");
-	Shader irradianceShader("assets/shaders/cubemap.vert", "assets/shaders/irradianceShader.frag");
-	Shader prefilterShader("assets/shaders/cubemap.vert", "assets/shaders/prefilter.frag");
-	Shader brdfShader("assets/shaders/brdf.vert", "assets/shaders/brdf.frag");
 	Shader skyboxShader("assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
 
-	Skybox skybox(skyboxShader, irradianceShader, brdfShader, conversionShader, prefilterShader, "assets/warm.hdr");
+	Skybox skybox(skyboxShader, conversionShader, "assets/warm.hdr");
 
 	pbrShader.use();
 	pbrShader.setMat4("projection", camera.getProjection());
 	skyboxShader.use();
 	skyboxShader.setMat4("projection", camera.getProjection());
+
+	skybox.createSkybox();
 
 	//skyboxShader.use();
 	//skyboxShader.setInt("environmentMap", 0);
@@ -215,13 +214,13 @@ int main() {
 			pbrShader.setMat4("projectionView", camera.getProjectionView());
 
 			//Test
-			landMaterial.use(skybox.irradianceMap, skybox.prefilterMap, skybox.brdfLUTTexture);
+			landMaterial.use();
 			orbObj.transform.position = glm::vec3(0, 0, 0);
 			pbrShader.setMat4("model", orbObj.transform.GetModel());
 			orbObj.draw(point, wireframe);
 
 			//Terrain
-			landMaterial.use(skybox.irradianceMap, skybox.prefilterMap, skybox.brdfLUTTexture);
+			landMaterial.use();
 			terrainObj.transform.position = glm::vec3(0, 0, 0);
 			pbrShader.setMat4("model", terrainObj.transform.GetModel());
 			terrainObj.draw(point, wireframe);
@@ -256,10 +255,7 @@ int main() {
 		skyboxShader.use();
 		skyboxShader.setMat4("projection", camera.getProjection());
 		skyboxShader.setMat4("view", camera.getView());
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.envCubemap);
-		//skybox.renderCube();
-		skybox.draw(camera.getProjection(), camera.getView());
+		skybox.draw();
 
 		// skybox cube
 		//glBindVertexArray(skybox.skyboxVAO);

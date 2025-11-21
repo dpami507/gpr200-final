@@ -20,49 +20,31 @@ namespace shaderz {
 	class Skybox
 	{
 	public:
-		Skybox(Shader& skyboxShader, Shader& irradianceShader, Shader& prefilterShader,
-			Shader& brdfShader, Shader& conversionShader, const std::string& hdrFile);
-		void loadHDR(const std::string& hdrFile);
+		Skybox(Shader& skyboxShader, Shader& conversionShader, const std::string& hdrFile);
+		unsigned int loadHDR(const std::string& hdrFile);
+		unsigned int convertToCubemap();
+
 		void createSkybox();
 
-		void createEnvCubemap();
-		void createFramebuffer();
-		void createIrradianceMap();
-		void createPrefilterMap();
-
-		void createBRDF();
-		void renderQuad();
-		void renderCube();
-
 		void bindIBL(Shader& pbrShader);
-		void convertToCubemap();
-		void draw(const glm::mat4& projection, const glm::mat4& view);
+
+		void bind();
+		void draw();
 
 		void CheckError(std::string location);
 
-		unsigned int envCubemap;
-		unsigned int irradianceMap;
-		unsigned int prefilterMap;
-		unsigned int brdfLUTTexture;
-		unsigned int skyboxVAO, skyboxVBO;
+
 	private:
+		unsigned int skyboxVAO, skyboxVBO;
 		unsigned int captureFBO, captureRBO;
-
 		unsigned int hdrTexture;
-
+		unsigned int cubemapTexture;
 		unsigned int textureID;
+
 		int width, height, nrChannels;
 
-		unsigned int quadVAO = 0;
-		unsigned int quadVBO;
-		unsigned int cubeVAO = 0;
-		unsigned int cubeVBO = 0;
-
-		Shader* brdfShader;
 		Shader* skyboxShader;
-		Shader* irradianceShader;
 		Shader* conversionShader;
-		Shader* prefilterShader;
 
 		std::string hdrFile;
 	};

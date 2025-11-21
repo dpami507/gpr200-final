@@ -62,65 +62,53 @@ namespace shaderz {
 
 		createDefaultTextures();
 	}
-	void PBRMaterial::use(unsigned int irradianceMapID, unsigned int skyboxCubemapID, unsigned int brdfID)
+	void PBRMaterial::use()
 	{
 		shader->use();
 		shader->setVec2("uvTiling", uvTiling);
 
-		shader->setInt("irradianceMap", 0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapID);
-
-		shader->setInt("environmentMap", 1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemapID);
-
-		shader->setInt("brdfLUT", 2);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, brdfID);
-
-		shader->setInt("albedoMap", 3);
+		shader->setInt("albedoMap", 0);
 		if (albedo != nullptr)
-			albedo->Bind(3);
+			albedo->Bind(0);
 		else
 		{
-			glActiveTexture(GL_TEXTURE3);
+			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, defaultWhiteID);
 		}
 
-		shader->setInt("roughnessMap", 4);
+		shader->setInt("roughnessMap", 1);
 		if (roughness != nullptr)
-			roughness->Bind(4);
+			roughness->Bind(1);
 		else
 		{
-			glActiveTexture(GL_TEXTURE4);
+			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, defaultRoughnessID);
 		}
 
-		shader->setInt("normalMap", 5);
+		shader->setInt("normalMap", 2);
 		if (normal != nullptr)
-			normal->Bind(5);
+			normal->Bind(2);
 		else
 		{
-			glActiveTexture(GL_TEXTURE5);
+			glActiveTexture(GL_TEXTURE2);
 			glBindTexture(GL_TEXTURE_2D, defaultNormalID);
 		}
 
-		shader->setInt("metallicMap", 6);
+		shader->setInt("metallicMap", 3);
 		if (metallic != nullptr)
-			metallic->Bind(6);
+			metallic->Bind(3);
 		else
 		{
-			glActiveTexture(GL_TEXTURE6);
+			glActiveTexture(GL_TEXTURE3);
 			glBindTexture(GL_TEXTURE_2D, defaultBlackID);
 		}
 
-		shader->setInt("aoMap", 7);
+		shader->setInt("aoMap", 4);
 		if (ao != nullptr)
-			ao->Bind(7);
+			ao->Bind(4);
 		else
 		{
-			glActiveTexture(GL_TEXTURE7);
+			glActiveTexture(GL_TEXTURE4);
 			glBindTexture(GL_TEXTURE_2D, defaultWhiteID);
 		}
 	}

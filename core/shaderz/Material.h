@@ -15,7 +15,7 @@ namespace shaderz {
     {
     public:
         PBRMaterial(Shader* shader, glm::vec2 uv, Texture2D* albedo, Texture2D* roughness, Texture2D* normal, Texture2D* metallic, Texture2D* ao);
-        void use(unsigned int irradianceMapID, unsigned int skyboxCubemapID, unsigned int brdfID);
+        void use();
     private:
         Shader* shader;
         glm::vec2 uvTiling;
