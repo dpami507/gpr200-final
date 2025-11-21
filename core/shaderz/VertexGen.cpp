@@ -378,7 +378,7 @@ namespace shaderz {
 
 		return m;	
 	}
-	MeshData createTerrain(float size, int segments, unsigned char* terrainTexture)
+	MeshData createTerrain(float size, int segments, float* terrainTexture)
 	{
 		MeshData m;
 
@@ -396,8 +396,9 @@ namespace shaderz {
 			float zPos = size * ((float)r / segments) - (size / 2);
 			float distanceToCenter = sqrt(pow(xPos, 2) + pow(zPos, 2));
 
-			unsigned char texValue = terrainTexture[r * (segments + 1) + c];
-			float height = ((texValue / 127.5f) - 1.0f) - (5 * distanceToCenter) / size;
+			int index = r * (segments + 1) + c;
+			float texValue = terrainTexture[index];
+			float height = (texValue - distanceToCenter) / size;
 
 			return height;
 		};
