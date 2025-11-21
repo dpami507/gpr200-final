@@ -75,8 +75,8 @@ namespace shaderz {
 		createFramebuffer();
 
 		// Create cubemaps and textures
-		convertToCubemap();      // HDR -> envCubemap
 		createEnvCubemap();
+		convertToCubemap();      // HDR -> envCubemap
 		createIrradianceMap();   // Diffuse
 		createPrefilterMap();    // Specular
 		createBRDF();            // BRDF LUT
@@ -131,19 +131,24 @@ namespace shaderz {
 	{
 		std::cout << "Loading HDR\n";
 
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		glGenTextures(1, &hdrTexture);
+		glBindTexture(GL_TEXTURE_2D, hdrTexture);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 		stbi_set_flip_vertically_on_load(true);
 		float* data = stbi_loadf(hdrFile.c_str(), &width, &height, &nrChannels, 0);
 
 		if (data)
 		{
-			glGenTextures(1, &hdrTexture);
-			glBindTexture(GL_TEXTURE_2D, hdrTexture);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
-
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
 
 			std::cout << "HDR loaded path: " << hdrFile << std::endl;
 			std::cout << "HDR resolution: " << width << " x " << height << "\n";
@@ -153,6 +158,11 @@ namespace shaderz {
 		{
 			std::cout << "Failed to load HDR at path: " << hdrFile << std::endl;
 		}
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, hdrTexture);
+
+
 
 		CheckError("HDR_LOAD");
 	}
@@ -200,9 +210,16 @@ namespace shaderz {
 			std::cout << "Converting face " << i << std::endl;
 
 			conversionShader->setMat4("view", captureViews[i]);
-			//Causes Render Cube to error
-			//INVALID_OPERATION
+
+
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+			
+			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			if (status != GL_FRAMEBUFFER_COMPLETE)
+			{
+				std::cout << "Framebuffer not complete for face " << i << " - status: 0x" << std::hex << status << std::dec << "\n";
+			}
+
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			CheckError("SIDE");
