@@ -397,8 +397,13 @@ namespace shaderz {
 			float distanceToCenter = sqrt(pow(xPos / size, 2) + pow(zPos / size, 2));
 
 			int index = r * (segments + 1) + c;
+<<<<<<< Updated upstream
 			float texValue = terrainTexture[index];
 			float height = (texValue - distanceToCenter) * size;
+=======
+			float texValue = terrainTexture[index] * size;
+			float height = (texValue - distanceToCenter) / size;
+>>>>>>> Stashed changes
 
 			return height;
 		};

@@ -68,9 +68,6 @@ const char* itemNames[3] = {
   "Normals",
   "Shaded"
 };
-
-//this is a change
-
 bool wireframe = false;
 bool point = false;
 
@@ -109,29 +106,13 @@ int main() {
 	ImGui_ImplOpenGL3_Init();
 
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	//glDepthFunc(GL_LEQUAL);
+	//glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 	//Create Shaders
 	Shader pbrShader("assets/shaders/PBR.vert", "assets/shaders/PBR.frag");
 	Shader litShader("assets/shaders/litShader.vert", "assets/shaders/litShader.frag");
 	Shader unlitShader("assets/shaders/unlitShader.vert", "assets/shaders/unlitShader.frag");
-
-	//Create Skybox
-	Shader conversionShader("assets/shaders/cubemap.vert", "assets/shaders/equirectangularToCube.frag");
-	Shader skyboxShader("assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
-
-	Skybox skybox(skyboxShader, conversionShader, "assets/warm.hdr");
-
-	pbrShader.use();
-	pbrShader.setMat4("projection", camera.getProjection());
-	skyboxShader.use();
-	skyboxShader.setMat4("projection", camera.getProjection());
-
-	skybox.createSkybox();
-
-	//skyboxShader.use();
-	//skyboxShader.setInt("environmentMap", 0);
 
 	//Grass Texture
 	Texture2D grassColor("assets/GrassColor.jpg", GL_NEAREST, GL_REPEAT);
@@ -159,6 +140,7 @@ int main() {
 	noise.SetFrequency(frequency);
 	noise.SetFractalType(FastNoiseLite::FractalType_FBm);
 	noise.SetFractalOctaves(octaveCount);
+
 	Terrain terrainObj(noise, terrainSize, terrainSubdivision);
 
 	//Test Object
@@ -177,12 +159,19 @@ int main() {
 	Object waterObj(plane);
 
 	//Create Skybox
+<<<<<<< Updated upstream
 	Shader skyboxShader("assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
 	Skybox skybox(skyboxShader, "assets/warm.hdr");
 
 	pbrShader.use();
 	pbrShader.setInt("skybox", 0);
 	pbrShader.setMat4("projection", camera.getProjection());
+=======
+	Shader conversionShader("assets/shaders/cubemap.vert", "assets/shaders/equirectangularToCube.frag");
+	Shader skyboxShader("assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
+	Skybox skybox(skyboxShader, conversionShader, "assets/warm.hdr");
+	skybox.createSkybox();
+>>>>>>> Stashed changes
 
 	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -215,31 +204,21 @@ int main() {
 		{	
 			//Set LitShader
 			pbrShader.use();
+<<<<<<< Updated upstream
 			pbrShader.setMat4("projectionView", camera.getProjectionView());
+=======
+>>>>>>> Stashed changes
 
 			pbrShader.setVec3("lightPos", lightObject.transform.position);
 			pbrShader.setVec3("lightColor", lightColor);
 			pbrShader.setVec3("viewPos", camera.getPosition());
 			pbrShader.setMat4("projectionView", camera.getProjectionView());
 
-			//Set UnlitShader
-			unlitShader.use();
-			unlitShader.setMat4("projectionView", camera.getProjectionView());
-			unlitShader.setFloat("lightStrength", lightStrength);
-			unlitShader.setVec3("lightColor", lightColor);
+<<<<<<< Updated upstream
+=======
+			skybox.bind();
 
-			//Test
-			landMaterial.use();
-			orbObj.transform.position = glm::vec3(0, 0, 0);
-			pbrShader.setMat4("model", orbObj.transform.GetModel());
-			orbObj.draw(point, wireframe);
-
-			//Terrain
-			landMaterial.use();
-			terrainObj.transform.position = glm::vec3(0, 0, 0);
-			pbrShader.setMat4("model", terrainObj.transform.GetModel());
-			terrainObj.draw(point, wireframe);
-
+>>>>>>> Stashed changes
 			//Set UnlitShader
 			unlitShader.use();
 			unlitShader.setMat4("projectionView", camera.getProjectionView());
@@ -276,8 +255,12 @@ int main() {
 		}
 
 		//Draw Skybox last
+<<<<<<< Updated upstream
 		glDisable(GL_CULL_FACE);
 		skybox.draw(camera.getProjection(), camera.getView());
+=======
+		skybox.draw(camera.getView(), camera.getProjection());
+>>>>>>> Stashed changes
 
 		//ImGui
 		{

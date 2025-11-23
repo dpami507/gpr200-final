@@ -10,8 +10,6 @@ void main()
 {
     localPos = aPos;
 
-	mat4 rotView = mat4(mat3(view));
-	vec4 clipPos = projection * rotView * vec4(aPos, 1.0);
-
-	gl_Position = clipPos.xyww;
+    vec4 pos = projection * view * vec4(aPos, 1.0);
+    gl_Position = pos.xyww;
 }  
