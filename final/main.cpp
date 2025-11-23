@@ -159,19 +159,8 @@ int main() {
 	Object waterObj(plane);
 
 	//Create Skybox
-<<<<<<< Updated upstream
 	Shader skyboxShader("assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
 	Skybox skybox(skyboxShader, "assets/warm.hdr");
-
-	pbrShader.use();
-	pbrShader.setInt("skybox", 0);
-	pbrShader.setMat4("projection", camera.getProjection());
-=======
-	Shader conversionShader("assets/shaders/cubemap.vert", "assets/shaders/equirectangularToCube.frag");
-	Shader skyboxShader("assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
-	Skybox skybox(skyboxShader, conversionShader, "assets/warm.hdr");
-	skybox.createSkybox();
->>>>>>> Stashed changes
 
 	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -204,21 +193,12 @@ int main() {
 		{	
 			//Set LitShader
 			pbrShader.use();
-<<<<<<< Updated upstream
-			pbrShader.setMat4("projectionView", camera.getProjectionView());
-=======
->>>>>>> Stashed changes
-
 			pbrShader.setVec3("lightPos", lightObject.transform.position);
 			pbrShader.setVec3("lightColor", lightColor);
 			pbrShader.setVec3("viewPos", camera.getPosition());
 			pbrShader.setMat4("projectionView", camera.getProjectionView());
 
-<<<<<<< Updated upstream
-=======
 			skybox.bind();
-
->>>>>>> Stashed changes
 			//Set UnlitShader
 			unlitShader.use();
 			unlitShader.setMat4("projectionView", camera.getProjectionView());
@@ -254,13 +234,7 @@ int main() {
 			lightObject.draw(point, wireframe);
 		}
 
-		//Draw Skybox last
-<<<<<<< Updated upstream
-		glDisable(GL_CULL_FACE);
-		skybox.draw(camera.getProjection(), camera.getView());
-=======
 		skybox.draw(camera.getView(), camera.getProjection());
->>>>>>> Stashed changes
 
 		//ImGui
 		{

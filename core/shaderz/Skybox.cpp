@@ -1,51 +1,7 @@
 #include "Skybox.h"
 
 namespace shaderz {
-	float skyboxVertices[] = {
-<<<<<<< Updated upstream
-		// back face
-		-1.0f, -1.0f, -1.0f, // bottom-left
-		 1.0f,  1.0f, -1.0f, // top-right
-		 1.0f, -1.0f, -1.0f, // bottom-right         
-		 1.0f,  1.0f, -1.0f, // top-right
-		-1.0f, -1.0f, -1.0f, // bottom-left
-		-1.0f,  1.0f, -1.0f, // top-left
-		// front face
-		-1.0f, -1.0f,  1.0f, // bottom-left
-		 1.0f, -1.0f,  1.0f, // bottom-right
-		 1.0f,  1.0f,  1.0f, // top-right
-		 1.0f,  1.0f,  1.0f, // top-right
-		-1.0f,  1.0f,  1.0f, // top-left
-		-1.0f, -1.0f,  1.0f, // bottom-left
-		// left face
-		-1.0f,  1.0f,  1.0f, // top-right
-		-1.0f,  1.0f, -1.0f, // top-left
-		-1.0f, -1.0f, -1.0f, // bottom-left
-		-1.0f, -1.0f, -1.0f, // bottom-left
-		-1.0f, -1.0f,  1.0f, // bottom-right
-		-1.0f,  1.0f,  1.0f, // top-right
-		// right face
-		 1.0f,  1.0f,  1.0f, // top-left
-		 1.0f, -1.0f, -1.0f, // bottom-right
-		 1.0f,  1.0f, -1.0f, // top-right         
-		 1.0f, -1.0f, -1.0f, // bottom-right
-		 1.0f,  1.0f,  1.0f, // top-left
-		 1.0f, -1.0f,  1.0f, // bottom-left     
-		 // bottom face
-		 -1.0f, -1.0f, -1.0f, // top-right
-		  1.0f, -1.0f, -1.0f, // top-left
-		  1.0f, -1.0f,  1.0f, // bottom-left
-		  1.0f, -1.0f,  1.0f, // bottom-left
-		 -1.0f, -1.0f,  1.0f, // bottom-right
-		 -1.0f, -1.0f, -1.0f, // top-right
-		 // top face
-		 -1.0f,  1.0f, -1.0f, // top-left
-		  1.0f,  1.0f , 1.0f, // bottom-right
-		  1.0f,  1.0f, -1.0f, // top-right     
-		  1.0f,  1.0f,  1.0f, // bottom-right
-		 -1.0f,  1.0f, -1.0f, // top-left
-		 -1.0f,  1.0f,  1.0f, // bottom-left        
-=======
+	float skyboxVertices[] = {   
 		// positions          
 		-1.0f,  1.0f, -1.0f,
 		-1.0f, -1.0f, -1.0f,
@@ -88,14 +44,11 @@ namespace shaderz {
 		 1.0f, -1.0f, -1.0f,
 		-1.0f, -1.0f,  1.0f,
 		 1.0f, -1.0f,  1.0f
->>>>>>> Stashed changes
 	};
 
 	Skybox::Skybox(Shader& skyboxShader, const std::string& hdrFile)
 	{
 		this->skyboxShader = &skyboxShader;
-<<<<<<< Updated upstream
-
 		this->skyboxShader->use();
 		this->skyboxShader->setInt("skybox", 0);
 
@@ -134,42 +87,6 @@ namespace shaderz {
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-=======
-		this->skyboxShader->use();
-		this->skyboxShader->setInt("environmentMap", 0);
-
-		loadCubemap();
->>>>>>> Stashed changes
-	}
-
-	//Load all the images for the cubemap
-	void Skybox::loadCubemap()
-	{
-		glGenTextures(1, &textureID);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
-		for (unsigned int i = 0; i < faces.size(); i++)
-		{
-			stbi_set_flip_vertically_on_load(false);
-			unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
-			if (data)
-			{
-				std::cout << "Cubemap loaded path: " << faces[i] << std::endl;
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-				stbi_image_free(data);
-			}
-			else
-			{
-				std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
-				stbi_image_free(data);
-			}
-		}
-
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	}
 
 	//Create VAO and VBO for skybox
@@ -185,11 +102,8 @@ namespace shaderz {
 
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-<<<<<<< Updated upstream
 
 		CheckError("SKYBOX");
-=======
->>>>>>> Stashed changes
 	}
 
 	//Bind the cubemap texture
@@ -199,29 +113,13 @@ namespace shaderz {
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 	}
 
-<<<<<<< Updated upstream
-	void Skybox::draw(const glm::mat4& projection, const glm::mat4& view)
-=======
 	void Skybox::draw(glm::mat4 view, glm::mat4 projection)
->>>>>>> Stashed changes
 	{
 		glDepthMask(GL_FALSE);
 		glDepthFunc(GL_LEQUAL);
-		glDepthMask(GL_FALSE);
 
 		skyboxShader->use();
 		skyboxShader->setMat4("view", glm::mat4(glm::mat3(view)));
-		skyboxShader->setMat4("projection", projection);
-
-		skyboxShader->use();
-		skyboxShader->setMat4("view", view);
-		skyboxShader->setMat4("projection", projection);
-
-		//glDepthMask(GL_FALSE);
-		glDepthFunc(GL_LEQUAL);
-
-		skyboxShader->use();
-		skyboxShader->setMat4("view", view);
 		skyboxShader->setMat4("projection", projection);
 
 		glBindVertexArray(skyboxVAO);
@@ -233,12 +131,6 @@ namespace shaderz {
 		glDepthMask(GL_TRUE);
 		glDepthFunc(GL_LESS);
 
-<<<<<<< Updated upstream
-=======
-		glDepthMask(GL_TRUE);
-		glDepthFunc(GL_LESS);
-
->>>>>>> Stashed changes
 		CheckError("DRAW");
 	}
 
