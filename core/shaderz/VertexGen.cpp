@@ -394,11 +394,11 @@ namespace shaderz {
 
 			float xPos = size * ((float)c / segments) - (size / 2);
 			float zPos = size * ((float)r / segments) - (size / 2);
-			float distanceToCenter = sqrt(pow(xPos, 2) + pow(zPos, 2));
+			float distanceToCenter = sqrt(pow(xPos / size, 2) + pow(zPos / size, 2));
 
 			int index = r * (segments + 1) + c;
 			float texValue = terrainTexture[index];
-			float height = (texValue - distanceToCenter) / size;
+			float height = (texValue - distanceToCenter) * size;
 
 			return height;
 		};

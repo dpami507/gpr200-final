@@ -20,6 +20,7 @@ namespace shaderz {
 	class Skybox
 	{
 	public:
+<<<<<<< Updated upstream
 		Skybox(Shader& skyboxShader, Shader& conversionShader, const std::string& hdrFile);
 		unsigned int loadHDR(const std::string& hdrFile);
 		unsigned int convertToCubemap();
@@ -45,8 +46,34 @@ namespace shaderz {
 
 		Shader* skyboxShader;
 		Shader* conversionShader;
+=======
+		Skybox(Shader& skyboxShader, const std::string& hdrFile);
+		void loadCubemap();
+		void createSkybox();
 
-		std::string hdrFile;
+		void bind();
+		void draw(const glm::mat4& projection, const glm::mat4& view);
+
+		void CheckError(std::string location);
+
+	private:
+		unsigned int skyboxVAO, skyboxVBO;
+
+		unsigned int cubemapTexture;
+		int width, height, nrChannels;
+
+		Shader* skyboxShader;
+>>>>>>> Stashed changes
+
+		std::vector<std::string> faces
+		{
+			"assets/skybox/right.jpg",
+			"assets/skybox/left.jpg",
+			"assets/skybox/top.jpg",
+			"assets/skybox/bottom.jpg",
+			"assets/skybox/front.jpg",
+			"assets/skybox/back.jpg"
+		};
 	};
 }
 

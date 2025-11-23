@@ -19,9 +19,7 @@ uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
 uniform sampler2D aoMap;
 
-uniform samplerCube irradianceMap;
-uniform samplerCube environmentMap;
-uniform sampler2D brdfLUT;
+uniform samplerCube skybox;
 
 const float PI = 3.14159265359;
 
@@ -46,62 +44,45 @@ void main()
 
 	vec3 N = getNormalFromMap();
 	vec3 V = normalize(viewPos - FragPos);
-    vec3 R = reflect(-V, N); 
-
-    vec3 F0 = vec3(0.04);
-    F0 = mix(F0, albedo, metallic);
+    vec3 R = reflect(-V, N);
 
     vec3 Lo = vec3(0.0);
-    //Lights ======================
-    {
-       
-	    vec3 L = normalize(lightPos - FragPos);
-        vec3 H = normalize(V + L);
+	vec3 L = normalize(lightPos - FragPos);
+    vec3 H = normalize(V + L);
   
-        float distance    = length(lightPos - FragPos);
-        float attenuation = 1.0 / (distance * distance);
-        vec3 radiance     = lightColor * attenuation;
-	 
-        float NDF = DistributionGGX(N, H, roughness);   
-        float G   = GeometrySmith(N, V, L, roughness);    
-        vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);        
-        
-        vec3 numerator    = NDF * G * F;
-        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
-        vec3 specular = numerator / denominator;
+    float distance    = length(lightPos - FragPos);
+    float attenuation = 1.0 / (distance * distance);
+    vec3 radiance     = lightColor * attenuation;
+	
+	vec3 F0 = vec3(0.04); 
+	F0      = mix(F0, albedo, metallic);
+	vec3 F  = fresnelSchlick(max(dot(H, V), 0.0), F0);
 
-        vec3 kS = F;
-        vec3 kD = vec3(1.0) - kS;
-  
-        kD *= 1.0 - metallic;	
+    float NDF = DistributionGGX(N, H, roughness);       
+    float G   = GeometrySmith(N, V, L, roughness);  
 
-        float NdotL = max(dot(N, L), 0.0);
-        
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
-    }
-    //=============================
-
-    vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+    vec3 numerator    = NDF * G * F;
+    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0)  + 0.0001;
+    vec3 specular     = numerator / denominator;  
 
     vec3 kS = F;
-    vec3 kD = 1.0 - kS;
-    kD *= 1.0 - metallic;
+    vec3 kD = vec3(1.0) - kS;
+  
+    kD *= 1.0 - metallic;	
 
-    vec3 irradiance = texture(irradianceMap, N).rgb;
-    vec3 diffuse      = irradiance * albedo;
+    float NdotL = max(dot(N, L), 0.0);        
+    Lo += (kD * albedo / PI + specular) * radiance * NdotL;
 
-    const float MAX_REFLECTION_LOD = 4.0;
-    vec3 prefilteredColor = textureLod(environmentMap, R,  roughness * MAX_REFLECTION_LOD).rgb;    
-    vec2 brdf = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
-    vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+    vec3 F_ambient = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+    vec3 kS_ambient = F_ambient;
+    vec3 kD_ambient = 1.0 - kS_ambient;
+    kD_ambient *= 1.0 - metallic;
 
-    vec3 ambient = (kD * diffuse + specular) * ao;
+    vec3 ambient = vec3(0.03) * albedo * ao;
 
     vec3 color   = ambient + Lo; 
 
-    //HDR tonemapping
     color = color / (color + vec3(1.0));
-    //Gamma correct
     color = pow(color, vec3(1.0/2.2)); 
 
     FragColor = vec4(color, 1.0);
@@ -129,7 +110,7 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
-}   
+}
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
     float a      = roughness*roughness;

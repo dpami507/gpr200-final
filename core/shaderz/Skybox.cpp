@@ -46,27 +46,50 @@ namespace shaderz {
 		 -1.0f,  1.0f, -1.0f, // top-left
 		 -1.0f,  1.0f,  1.0f, // bottom-left        
 	};
-	glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-	glm::mat4 captureViews[] = {
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-	};
 
-	Skybox::Skybox(Shader& skyboxShader, Shader& conversionShader, const std::string& hdrFile)
+	Skybox::Skybox(Shader& skyboxShader, const std::string& hdrFile)
 	{
 		this->skyboxShader = &skyboxShader;
-		this->conversionShader = &conversionShader;
 
-		skyboxShader.use();
-		skyboxShader.setInt("environmentMap", 0);
+		this->skyboxShader->use();
+		this->skyboxShader->setInt("skybox", 0);
 
-		hdrTexture = loadHDR(hdrFile);
-		cubemapTexture = convertToCubemap();
-		
+		createSkybox();
+		loadCubemap();
+	}
+
+	void Skybox::loadCubemap()
+	{
+		glGenTextures(1, &cubemapTexture);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+
+		for (unsigned int i = 0; i < faces.size(); i++)
+		{
+			stbi_set_flip_vertically_on_load(false);
+			unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+			if (data)
+			{
+				int format = (nrChannels == 4) ? GL_RGBA : (nrChannels == 3) ? GL_RGB : (nrChannels == 2) ? GL_RG : GL_RED;
+
+				std::cout << "Cubemap loaded path: " << faces[i] << " (channels: " << nrChannels << ")" << std::endl;
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+				stbi_image_free(data);
+			}
+			else
+			{
+				std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
+				stbi_image_free(data);
+			}
+		}
+
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+>>>>>>> Stashed changes
 	}
 
 	void Skybox::createSkybox()
@@ -85,6 +108,7 @@ namespace shaderz {
 
 		CheckError("SKYBOX");
 	}
+<<<<<<< Updated upstream
 	//Load the HDR
 	unsigned int Skybox::loadHDR(const std::string& hdrFile)
 	{
@@ -164,24 +188,47 @@ namespace shaderz {
 
 		return cubemapTexture;
 	}
+=======
+>>>>>>> Stashed changes
 
 	//Bind the cubemap texture
 	void Skybox::bind()
 	{
+<<<<<<< Updated upstream
 		glActiveTexture(GL_TEXTURE1);
+=======
+		glActiveTexture(GL_TEXTURE0);
+>>>>>>> Stashed changes
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 	}
 
 	void Skybox::draw()
 	{
 		glDepthFunc(GL_LEQUAL);
+		glDepthMask(GL_FALSE);
 
+<<<<<<< Updated upstream
 		glBindVertexArray(skyboxVAO);
 		bind();
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 		glDepthFunc(GL_LESS);
 		
+=======
+		skyboxShader->use();
+		skyboxShader->setMat4("view", glm::mat4(glm::mat3(view)));
+		skyboxShader->setMat4("projection", projection);
+
+		glBindVertexArray(skyboxVAO);
+		bind();
+
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+
+		glDepthMask(GL_TRUE);
+		glDepthFunc(GL_LESS);
+
+>>>>>>> Stashed changes
 		CheckError("DRAW");
 	}
 
