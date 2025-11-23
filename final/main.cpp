@@ -222,6 +222,11 @@ int main() {
 			pbrShader.setVec3("viewPos", camera.getPosition());
 			pbrShader.setMat4("projectionView", camera.getProjectionView());
 
+			//Set UnlitShader
+			unlitShader.use();
+			unlitShader.setMat4("projectionView", camera.getProjectionView());
+			unlitShader.setFloat("lightStrength", lightStrength);
+			unlitShader.setVec3("lightColor", lightColor);
 
 			//Test
 			landMaterial.use();
@@ -272,12 +277,7 @@ int main() {
 
 		//Draw Skybox last
 		glDisable(GL_CULL_FACE);
-		glDepthFunc(GL_LEQUAL);
-
-		skyboxShader.use();
-		skyboxShader.setMat4("projection", camera.getProjection());
-		skyboxShader.setMat4("view", camera.getView());
-		skybox.draw();
+		skybox.draw(camera.getProjection(), camera.getView());
 
 		//ImGui
 		{

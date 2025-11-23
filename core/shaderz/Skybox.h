@@ -23,35 +23,6 @@ namespace shaderz {
 	{
 	public:
 		Skybox(Shader& skyboxShader, const std::string& hdrFile);
-		unsigned int loadHDR(const std::string& hdrFile);
-		unsigned int convertToCubemap();
-
-		void createSkybox();
-
-		void bindIBL(Shader& pbrShader);
-
-		void bind();
-		void draw();
-
-		void CheckError(std::string location);
-
-
-	private:
-		unsigned int skyboxVAO, skyboxVBO;
-		unsigned int captureFBO, captureRBO;
-		unsigned int hdrTexture;
-		unsigned int cubemapTexture;
-		unsigned int textureID;
-
-		int width, height, nrChannels;
-
-		Shader* skyboxShader;
-		Shader* conversionShader;
-		Skybox(Shader& skyboxShader, const std::string& hdrFile);
-		void loadCubemap();
-		void createSkybox();
-
-		Skybox(Shader& skyboxShader, const std::string& hdrFile);
 		void loadCubemap();
 		void createSkybox();
 
