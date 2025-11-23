@@ -89,7 +89,6 @@ namespace shaderz {
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
->>>>>>> Stashed changes
 	}
 
 	void Skybox::createSkybox()
@@ -108,7 +107,7 @@ namespace shaderz {
 
 		CheckError("SKYBOX");
 	}
-<<<<<<< Updated upstream
+
 	//Load the HDR
 	unsigned int Skybox::loadHDR(const std::string& hdrFile)
 	{
@@ -152,7 +151,7 @@ namespace shaderz {
 		//Conversion Shader
 		conversionShader->use();
 		conversionShader->setInt("equirectangularMap", 0);
-		conversionShader->setMat4("projection", captureProjection);
+		conversionShader->setMat4("projection", glm::mat4(0));
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, hdrTexture);
@@ -164,7 +163,7 @@ namespace shaderz {
 		{
 			std::cout << "Converting face " << i << std::endl;
 
-			conversionShader->setMat4("view", captureViews[i]);
+			conversionShader->setMat4("view", glm::mat4(0));
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, cubemapTexture, 0);
 			
@@ -188,33 +187,32 @@ namespace shaderz {
 
 		return cubemapTexture;
 	}
-=======
->>>>>>> Stashed changes
 
 	//Bind the cubemap texture
 	void Skybox::bind()
 	{
-<<<<<<< Updated upstream
 		glActiveTexture(GL_TEXTURE1);
-=======
 		glActiveTexture(GL_TEXTURE0);
->>>>>>> Stashed changes
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 	}
 
 	void Skybox::draw()
 	{
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+	}
+
+	void Skybox::draw(const glm::mat4& projection, const glm::mat4& view)
+	{
 		glDepthFunc(GL_LEQUAL);
 		glDepthMask(GL_FALSE);
 
-<<<<<<< Updated upstream
 		glBindVertexArray(skyboxVAO);
 		bind();
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 		glDepthFunc(GL_LESS);
 		
-=======
 		skyboxShader->use();
 		skyboxShader->setMat4("view", glm::mat4(glm::mat3(view)));
 		skyboxShader->setMat4("projection", projection);
@@ -228,7 +226,6 @@ namespace shaderz {
 		glDepthMask(GL_TRUE);
 		glDepthFunc(GL_LESS);
 
->>>>>>> Stashed changes
 		CheckError("DRAW");
 	}
 

@@ -113,7 +113,7 @@ int main() {
 	Shader pbrShader("assets/shaders/PBR.vert", "assets/shaders/PBR.frag");
 	Shader litShader("assets/shaders/litShader.vert", "assets/shaders/litShader.frag");
 	Shader unlitShader("assets/shaders/unlitShader.vert", "assets/shaders/unlitShader.frag");
-<<<<<<< Updated upstream
+
 	//Create Skybox
 	Shader conversionShader("assets/shaders/cubemap.vert", "assets/shaders/equirectangularToCube.frag");
 	Shader skyboxShader("assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
@@ -129,8 +129,6 @@ int main() {
 
 	//skyboxShader.use();
 	//skyboxShader.setInt("environmentMap", 0);
-=======
->>>>>>> Stashed changes
 
 	//Grass Texture
 	Texture2D grassColor("assets/GrassColor.jpg", GL_NEAREST, GL_REPEAT);
@@ -221,7 +219,7 @@ int main() {
 			pbrShader.setVec3("viewPos", camera.getPosition());
 			pbrShader.setMat4("projectionView", camera.getProjectionView());
 
-<<<<<<< Updated upstream
+
 			//Test
 			landMaterial.use();
 			orbObj.transform.position = glm::vec3(0, 0, 0);
@@ -234,8 +232,6 @@ int main() {
 			pbrShader.setMat4("model", terrainObj.transform.GetModel());
 			terrainObj.draw(point, wireframe);
 
-=======
->>>>>>> Stashed changes
 			//Set UnlitShader
 			unlitShader.use();
 			unlitShader.setMat4("projectionView", camera.getProjectionView());
@@ -273,16 +269,12 @@ int main() {
 
 		//Draw Skybox last
 		glDisable(GL_CULL_FACE);
-<<<<<<< Updated upstream
 		glDepthFunc(GL_LEQUAL);
 
 		skyboxShader.use();
 		skyboxShader.setMat4("projection", camera.getProjection());
 		skyboxShader.setMat4("view", camera.getView());
 		skybox.draw();
-=======
-		skybox.draw(camera.getProjection(), camera.getView());
->>>>>>> Stashed changes
 
 		//ImGui
 		{
