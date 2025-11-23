@@ -68,6 +68,9 @@ const char* itemNames[3] = {
   "Normals",
   "Shaded"
 };
+
+//this is a change
+
 bool wireframe = false;
 bool point = false;
 
