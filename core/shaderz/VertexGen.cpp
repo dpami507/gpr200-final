@@ -392,15 +392,17 @@ namespace shaderz {
 			r = std::max(0, std::min(r, segments));
 			c = std::max(0, std::min(c, segments));
 
-			float xPos = size * ((float)c / segments) - (size / 2);
-			float zPos = size * ((float)r / segments) - (size / 2);
+			float xPos = c * sampleOffset - (size / 2);
+			float zPos = r * sampleOffset - (size / 2);
+
 			float distanceToCenter = sqrt(pow(xPos / size, 2) + pow(zPos / size, 2));
 
 			int index = r * (segments + 1) + c;
 			float texValue = terrainTexture[index];
-			float height = (texValue - distanceToCenter) * size;
 
-			return height;
+			float height = (texValue - distanceToCenter);
+
+			return texValue;
 		};
 
 		//Create Verticies

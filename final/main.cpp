@@ -207,18 +207,23 @@ int main() {
 
 			//Test
 			goldMaterial.use();
-			orbObj.transform.position = glm::vec3(0, 0, 0);
+			orbObj.transform.position = glm::vec3(0, 5, 0);
 			pbrShader.setMat4("model", orbObj.transform.GetModel());
 			orbObj.draw(point, wireframe);
 
 			//Terrain
-			landMaterial.use();
-			terrainObj.transform.position = glm::vec3(0, 0, 0);
-			pbrShader.setMat4("model", terrainObj.transform.GetModel());
-			terrainObj.draw(point, wireframe);
+			//landMaterial.use();
 
 			waterMaterial.use();
 			terrainObj.BindTerrainTexture(0);
+			unlitShader.setInt("texture1", 0);
+
+			terrainObj.transform.position = glm::vec3(0, 0, 0);
+			unlitShader.setMat4("model", terrainObj.transform.GetModel());
+			terrainObj.draw(point, wireframe);
+
+			waterMaterial.use();
+			terrainObj.BindNoiseTexture(0);
 			unlitShader.setInt("texture1", 0);
 
 			waterObj.transform.position = glm::vec3(0, 0, 0);
