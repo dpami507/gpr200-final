@@ -10,8 +10,7 @@ namespace shaderz {
 	{
 	public:
 		Terrain(const FastNoiseLite& noise, float size, int segments);
-		void GenerateNoiseTexture(float size, int segments);
-		void CreateTerrainTexture(float size, int res, std::vector<std::pair<Texture2D*, float>> textures);
+		void GenerateNoiseTexture(float size, int segments, std::vector<std::pair<Texture2D*, float>> textures = { {nullptr, 0.0}, {nullptr, 0.0} });
 
 		void BindTerrainTexture(int slot);
 		void BindNoiseTexture(int slot);

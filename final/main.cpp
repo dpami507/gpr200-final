@@ -218,7 +218,7 @@ int main() {
 			terrainObj.BindTerrainTexture(0);
 			unlitShader.setInt("texture1", 0);
 
-			terrainObj.transform.position = glm::vec3(0, 0, 0);
+			terrainObj.transform.position = glm::vec3(2, 0, 0);
 			unlitShader.setMat4("model", terrainObj.transform.GetModel());
 			terrainObj.draw(point, wireframe);
 

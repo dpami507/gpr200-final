@@ -386,21 +386,16 @@ namespace shaderz {
 		int numOfVerticies = (segments + 1) * (segments + 1);
 		m.vertices.reserve(numOfVerticies);
 
-		float sampleOffset = ((float)size / segments);
+		float sampleOffset = (float)1 / segments;
+		float halfSize = 1 / 2.0f;
 
 		auto getSample = [&](int r, int c) -> float {
 			r = std::max(0, std::min(r, segments));
 			c = std::max(0, std::min(c, segments));
 
-			float xPos = c * sampleOffset - (size / 2);
-			float zPos = r * sampleOffset - (size / 2);
+			int index = ((segments - r) * (segments + 1)) + c;
 
-			float distanceToCenter = sqrt(pow(xPos / size, 2) + pow(zPos / size, 2));
-
-			int index = r * (segments + 1) + c;
 			float texValue = terrainTexture[index];
-
-			float height = (texValue - distanceToCenter);
 
 			return texValue;
 		};
@@ -408,12 +403,13 @@ namespace shaderz {
 		//Create Verticies
 		for (size_t row = 0; row <= segments; row++)
 		{
+			float zPos = row * sampleOffset - halfSize;
+
 			for (size_t col = 0; col <= segments; col++)
 			{
 				Vertex v;
 
-				float xPos = size * ((float)col / segments) - (size / 2);
-				float zPos = size * ((float)row / segments) - (size / 2);
+				float xPos = col * sampleOffset - halfSize;
 
 				//Position
 				v.pos.x = xPos;

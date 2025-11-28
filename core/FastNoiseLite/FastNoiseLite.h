@@ -137,6 +137,8 @@ public:
         mDomainWarpAmp = 1.0f;
     }
 
+	int GetOctaves() const { return mOctaves; }
+
     /// <summary>
     /// Sets seed used for all noise types
     /// </summary>
