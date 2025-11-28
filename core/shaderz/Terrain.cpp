@@ -1,7 +1,7 @@
 #include "Terrain.h"
 
 namespace shaderz {
-    void Terrain::GenerateNoiseTexture(float size, int segments, std::vector<std::pair<Texture2D*, float>> textures)
+    void Terrain::GenerateNoiseTexture(float size, int segments)
     {
         std::cout << "Creating Noise/Terrain Texture\n";
 
@@ -12,8 +12,8 @@ namespace shaderz {
         noiseData = new float[numberofPoints];
         texData = new float[numberofPoints * 3];
 
-        float sampleOffset = (float)1 / segments;
-        float halfSize = 1 / 2.0f;
+        float sampleOffset = (float)size / segments;
+        float halfSize = size / 2.0f;
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -63,15 +63,23 @@ namespace shaderz {
 
                 glm::vec3 color = glm::vec3(noiseValue);
 
-                if (true)
+                if (textures.size() > 0)
                 {
-                    if (noiseValue > 0.6)
-                        color = glm::vec3(0.5f, 0.5f, 0.5f); // Rock
-                    else if (noiseValue > 0.5)
-                        color = glm::vec3(0.0f, 1.0f, 0.0f); // Grass
-                    else if (noiseValue > 0.45)
-                        color = glm::vec3(0.76f, 0.70f, 0.50f); // Sand
-					else color = glm::vec3(0.8f, 0.2f, 0.2f); // Dirt
+                    for (auto tex : textures)
+                    {
+                        if (noiseValue < tex.second)
+                        {
+                            color = tex.first->Sample(glm::vec2((float)col / segments, (float)row / segments));
+                            break;
+						}
+                    }
+     //               if (noiseValue > 0.6)
+     //                   color = glm::vec3(0.5f, 0.5f, 0.5f); // Rock
+     //               else if (noiseValue > 0.5)
+     //                   color = glm::vec3(0.0f, 1.0f, 0.0f); // Grass
+     //               else if (noiseValue > 0.45)
+     //                   color = glm::vec3(0.76f, 0.70f, 0.50f); // Sand
+					//else color = glm::vec3(0.8f, 0.2f, 0.2f); // Dirt
                 }
 
 
@@ -97,10 +105,12 @@ namespace shaderz {
         glBindTexture(GL_TEXTURE_2D, terrainTextureID);
     }
 
-	Terrain::Terrain(const FastNoiseLite& noise, float size, int segments) : Object(*mesh)
+	Terrain::Terrain(const FastNoiseLite& noise, float size, int segments, std::vector<std::pair<Texture2D*, float>> textures) : Object(*mesh)
 	{
 		this->noise = noise;
         this->segments = segments;
+
+		this->textures = textures;
 
         GenerateNoiseTexture(size, segments);
 

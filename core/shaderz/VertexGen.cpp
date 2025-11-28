@@ -386,8 +386,8 @@ namespace shaderz {
 		int numOfVerticies = (segments + 1) * (segments + 1);
 		m.vertices.reserve(numOfVerticies);
 
-		float sampleOffset = (float)1 / segments;
-		float halfSize = 1 / 2.0f;
+		float sampleOffset = (float)size / segments;
+		float halfSize = size / 2.0f;
 
 		auto getSample = [&](int r, int c) -> float {
 			r = std::max(0, std::min(r, segments));

@@ -141,7 +141,12 @@ int main() {
 	noise.SetFractalType(FastNoiseLite::FractalType_FBm);
 	noise.SetFractalOctaves(octaveCount);
 
-	Terrain terrainObj(noise, terrainSize, terrainSubdivision);
+	std::vector<std::pair<Texture2D*, float>> terrainTextures;
+
+	terrainTextures.push_back({ &grassColor, 0.5 });
+	terrainTextures.push_back({ &goldColor, 1.0 });
+
+	Terrain terrainObj(noise, terrainSize, terrainSubdivision, terrainTextures);
 
 	//Test Object
 	Object orbObj(orb);
