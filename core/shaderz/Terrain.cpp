@@ -8,9 +8,9 @@ namespace shaderz {
         if (segments != this->segments)
             this->segments = segments;
 
+		//Create Noise Texture for Heightmap
         int numberofPoints = (segments + 1) * (segments + 1);
         noiseData = new float[numberofPoints];
-        texData = new float[numberofPoints * 3];
 
         float sampleOffset = (float)size / segments;
         float halfSize = size / 2.0f;
@@ -36,6 +36,9 @@ namespace shaderz {
                 int index = ((segments - row) * (segments + 1)) + col;
                 float noiseValue = (noise.GetNoise(xPos, zPos) + 1.0f) / 2.0f;
 
+				float distanceFromCenter = sqrt(xPos * xPos + zPos * zPos) - 0.4;
+                //noiseValue -= distanceFromCenter;
+
                 noiseData[index] = noiseValue;
             }
         }
@@ -49,17 +52,31 @@ namespace shaderz {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+		//Create Texture Color Data With higher resolution so it looks better ya know
+        int LOD = 16;
+        int HLOD = LOD;
+        int resolution = segments * LOD;
+        numberofPoints = (resolution + 1) * (resolution + 1);
+
+        texData = new float[numberofPoints * 3];
+        sampleOffset = (float)size / resolution;
+        halfSize = size / 2.0f;
+		noise.SetFractalOctaves(noise.GetOctaves() + 1);
+
         //Generate Data
-        for (size_t row = 0; row <= segments; row++)
+        for (size_t row = 0; row <= resolution; row++)
         {
             float zPos = row * sampleOffset - halfSize;
 
-            for (size_t col = 0; col <= segments; col++)
+            for (size_t col = 0; col <= resolution; col++)
             {
                 //Texture Data
                 float xPos = col * sampleOffset - halfSize;
-                int index = (((segments - row) * (segments + 1)) + col) * 3;
+                int index = (((resolution - row) * (resolution + 1)) + col) * 3;
                 float noiseValue = (noise.GetNoise(xPos, zPos) + 1.0f) / 2.0f;
+
+                float distanceFromCenter = sqrt(xPos * xPos + zPos * zPos) - 0.4;
+                //noiseValue -= distanceFromCenter;
 
                 glm::vec3 color = glm::vec3(noiseValue);
 
@@ -67,19 +84,12 @@ namespace shaderz {
                 {
                     for (auto tex : textures)
                     {
-                        if (noiseValue < tex.second)
+                        if (noiseValue > tex.second)
                         {
-                            color = tex.first->Sample(glm::vec2((float)col / segments, (float)row / segments));
+                            color = tex.first->Sample(glm::vec2((float)col * HLOD / resolution, (float)row * HLOD / resolution));
                             break;
 						}
                     }
-     //               if (noiseValue > 0.6)
-     //                   color = glm::vec3(0.5f, 0.5f, 0.5f); // Rock
-     //               else if (noiseValue > 0.5)
-     //                   color = glm::vec3(0.0f, 1.0f, 0.0f); // Grass
-     //               else if (noiseValue > 0.45)
-     //                   color = glm::vec3(0.76f, 0.70f, 0.50f); // Sand
-					//else color = glm::vec3(0.8f, 0.2f, 0.2f); // Dirt
                 }
 
 
@@ -89,7 +99,7 @@ namespace shaderz {
             }
         }
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, segments + 1, segments + 1, 0, GL_RGB, GL_FLOAT, texData);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, resolution + 1, resolution + 1, 0, GL_RGB, GL_FLOAT, texData);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 
