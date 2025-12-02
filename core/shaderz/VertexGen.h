@@ -42,6 +42,7 @@ namespace shaderz {
 	class Mesh {
 	public:
 		Mesh(const MeshData& meshData);
+		~Mesh();
 		void draw(bool drawAsPoints = false, bool drawWireframe = false); //If drawAsPoints is true, use GL_POINTS instead of GL_TRIANGLES for the draw call
 		void load(const MeshData& meshData);
 	private:

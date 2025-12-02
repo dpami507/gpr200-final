@@ -3,7 +3,7 @@
 namespace shaderz {
     void Terrain::GenerateNoiseTexture(float size, int segments)
     {
-        std::cout << "Creating Noise/Terrain Texture\n";
+        std::cout << "Creating Noise Texture\n";
 
         if (segments != this->segments)
             this->segments = segments;
@@ -46,6 +46,8 @@ namespace shaderz {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, segments + 1, segments + 1, 0, GL_RED, GL_FLOAT, noiseData);
         glGenerateMipmap(GL_TEXTURE_2D);
 
+        std::cout << "Creating Terrain Texture\n";
+
         glGenTextures(1, &terrainTextureID);
         glBindTexture(GL_TEXTURE_2D, terrainTextureID);
 
@@ -53,15 +55,16 @@ namespace shaderz {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		//Create Texture Color Data With higher resolution so it looks better ya know
-        int LOD = 16;
+        int LOD = 2;
         int HLOD = LOD;
         int resolution = segments * LOD;
         numberofPoints = (resolution + 1) * (resolution + 1);
 
+		//Create Texture Data
         texData = new float[numberofPoints * 3];
         sampleOffset = (float)size / resolution;
         halfSize = size / 2.0f;
-		noise.SetFractalOctaves(noise.GetOctaves() + 1);
+		noise.SetFractalOctaves(noise.GetOctaves() + 1); //Increase Octaves so texture doesn't perfectly match heightmap
 
         //Generate Data
         for (size_t row = 0; row <= resolution; row++)
@@ -80,6 +83,7 @@ namespace shaderz {
 
                 glm::vec3 color = glm::vec3(noiseValue);
 
+                //Get texture sample based on height
                 if (textures.size() > 0)
                 {
                     for (auto tex : textures)
@@ -92,7 +96,7 @@ namespace shaderz {
                     }
                 }
 
-
+                //Set Colors
                 texData[index] = color.r;
                 texData[index + 1] = color.g;
                 texData[index + 2] = color.b;
@@ -115,11 +119,11 @@ namespace shaderz {
         glBindTexture(GL_TEXTURE_2D, terrainTextureID);
     }
 
+	//Constructor to set up noise, segments and textures
 	Terrain::Terrain(const FastNoiseLite& noise, float size, int segments, std::vector<std::pair<Texture2D*, float>> textures) : Object(*mesh)
 	{
 		this->noise = noise;
         this->segments = segments;
-
 		this->textures = textures;
 
         GenerateNoiseTexture(size, segments);
@@ -129,7 +133,20 @@ namespace shaderz {
 
 		std::cout << "Created Terrain Object\n";
 	}
+    Terrain::~Terrain()
+    {
+        delete[] noiseData;
+        noiseData = nullptr;
 
+        delete[] texData;
+        texData = nullptr;
+
+		delete mesh;
+		mesh = nullptr;
+	}
+
+
+    //Call mesh to draw
 	void Terrain::draw(bool drawAsPoints, bool drawWireframe)
 	{
 		mesh->draw(drawAsPoints, drawWireframe);
@@ -139,6 +156,12 @@ namespace shaderz {
 	void Terrain::load(float size, int segments, FastNoiseLite noise)
 	{
         this->noise = noise;
+
+        delete[] noiseData;
+		noiseData = nullptr;
+
+		delete[] texData;
+        texData = nullptr;
 
         GenerateNoiseTexture(size, segments);
 
