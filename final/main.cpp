@@ -51,14 +51,9 @@ int sphereSubdivision = 8;
 float sphereRadius = 1;
 
 //Terrain
-int terrainSubdivision = 5;
+int terrainSubdivision = 16;
 float terrainSize = 1;
-float heightScale = 1;
-
-float noiseScale = 0.1;
-float persistence = 0.3;
 float frequency = 4.0;
-float amplitude = 1.0;
 int octaveCount = 4;
 
 float waterHeight = 0.01;
@@ -118,6 +113,7 @@ int main() {
 	Shader litShader("assets/shaders/litShader.vert", "assets/shaders/litShader.frag");
 	Shader unlitShader("assets/shaders/unlitShader.vert", "assets/shaders/unlitShader.frag");
 	Shader waterShader("assets/shaders/water.vert", "assets/shaders/water.frag");
+	Shader terrainShader("assets/shaders/terrain.vert", "assets/shaders/terrain.frag");
 
 	//Grass Texture
 	Texture2D grassColor("assets/materials/grass/GrassColor.jpg", GL_NEAREST, GL_REPEAT);
@@ -153,30 +149,20 @@ int main() {
 
 	//Create Primitive Meshes
 	Mesh sphere(createSphere(sphereRadius, sphereSubdivision));
-	Mesh orb(createSphere(1, 32));
 	Mesh plane(createPlane(terrainSize, terrainSize, terrainSubdivision, true));
 
-	FastNoiseLite noise;
-	noise.SetNoiseType(noise.NoiseType_Perlin);
-	noise.SetFrequency(frequency);
-	noise.SetFractalType(FastNoiseLite::FractalType_FBm);
-	noise.SetFractalOctaves(octaveCount);
 
-	std::vector<std::pair<Texture2D*, float>> terrainTextures;
+	Noise perlinNoise(octaveCount, frequency);
 
-	terrainTextures.push_back({ &snowColor, 0.75 });
-	terrainTextures.push_back({ &rockColor, 0.6 });
-	terrainTextures.push_back({ &grassColor, 0.5 });
-	terrainTextures.push_back({ &sandColor, 0.45 });
-	terrainTextures.push_back({ &dirtColor, 0.0 });
+	std::vector<std::pair<Texture2D*, std::pair<float, float>>> terrainTextures;
 
-	Terrain terrainObj(noise, terrainSize, terrainSubdivision, terrainTextures);
+	terrainTextures.push_back({ &dirtColor,		{0.0,  5} });
+	terrainTextures.push_back({ &sandColor,		{0.45, 5} });
+	terrainTextures.push_back({ &grassColor,	{0.5,  5} });
+	terrainTextures.push_back({ &rockColor,		{0.6,  5} });
+	terrainTextures.push_back({ &snowColor,		{0.75, 5} });
 
-	//Test Object
-	Object orbObj(orb);
-	orbObj.transform.position = glm::vec3(5.0, 2.0, 0.0);
-	orbObj.transform.rotation = glm::vec3(0.0);
-	orbObj.transform.scale = glm::vec3(0.5);
+	Terrain terrainObj(perlinNoise, terrainSize, terrainSubdivision);
 
 	//Light Object
 	Object lightObject(sphere);
@@ -196,18 +182,6 @@ int main() {
 
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
-		//TO DO
-		// Create Global Settings
-		// -Lights (position, color, strength, falloff) <-- probably jsut make a light class
-		// -Directional Light
-		// -Or IMAGE BASED LIGHTING !!!!!!!
-		// -Point Light
-		// 
-		// Landscape
-		// -Using the heights we can set different textures and colors for it
-		//
-		//
-
 		//Culling
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
@@ -223,12 +197,9 @@ int main() {
 		{	
 			skybox.bind();
 
-			//Set LitShader
-			pbrShader.use();
-			pbrShader.setVec3("lightPos", lightObject.transform.position);
-			pbrShader.setVec3("lightColor", lightColor);
-			pbrShader.setVec3("viewPos", camera.getPosition());
-			pbrShader.setMat4("projectionView", camera.getProjectionView());
+			//Set TerrainShader
+			terrainShader.use();
+			terrainShader.setMat4("projectionView", camera.getProjectionView());
 
 			//Set UnlitShader
 			unlitShader.use();
@@ -239,12 +210,21 @@ int main() {
 			waterShader.setMat4("projectionView", camera.getProjectionView());
 
 			//Set up texture for Terrain
-			blankMaterial.use();
-			terrainObj.BindTerrainTexture(0);
-			unlitShader.setInt("texture1", 0);
+			terrainShader.use();
+			terrainShader.setFloat("frequency", frequency);
+			terrainShader.setInt("octaves", octaveCount + 1);
+
+			for(int i = 0; i < terrainTextures.size(); i++)
+			{
+				terrainTextures[i].first->Bind(i);
+				terrainShader.setInt("textures[" + std::to_string(i) + "]", i);
+				terrainShader.setFloat("thresholds[" + std::to_string(i) + "]", terrainTextures[i].second.first);
+				terrainShader.setFloat("uvTile[" + std::to_string(i) + "]", terrainTextures[i].second.second);
+			}
+			terrainShader.setInt("numTextures", terrainTextures.size());
 
 			terrainObj.transform.position = glm::vec3(0, 0, 0);
-			unlitShader.setMat4("model", terrainObj.transform.GetModel());
+			terrainShader.setMat4("model", terrainObj.transform.GetModel());
 			terrainObj.draw(point, wireframe);
 
 			//Set up texture to show heightmap
@@ -314,18 +294,13 @@ int main() {
 				ImGui::SliderInt("Terrain Segments", &terrainSubdivision, 1, 512); 
 				ImGui::SliderFloat("Terrain Size", &terrainSize, 1, 16);
 				ImGui::SliderInt("Octave Count", &octaveCount, 1, 8);
-				ImGui::SliderFloat("Frequency", &frequency, 0, 8);
+				ImGui::SliderFloat("Frequency", &frequency, 1, 8);
 
 				if (ImGui::Button("Regenerate Terrain"))
 				{
-					FastNoiseLite noise;
+					Noise perlinNoise(octaveCount, frequency);
 
-					noise.SetNoiseType(noise.NoiseType_Perlin);
-					noise.SetFrequency(frequency);
-					noise.SetFractalType(FastNoiseLite::FractalType_FBm);
-					noise.SetFractalOctaves(octaveCount);
-
-					terrainObj.load(terrainSize, terrainSubdivision, noise);
+					terrainObj.load(terrainSize, terrainSubdivision, perlinNoise);
 					plane.load(createPlane(terrainSize, terrainSize, terrainSubdivision, true));
 				}
 			}

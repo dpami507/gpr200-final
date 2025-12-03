@@ -14,8 +14,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "../FastNoiseLite/FastNoiseLite.h"
-
 namespace shaderz {
 	//Stores data for a single vertex
 	struct Vertex {
