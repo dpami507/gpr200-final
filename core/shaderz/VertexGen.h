@@ -14,8 +14,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "../FastNoiseLite/FastNoiseLite.h"
-
 namespace shaderz {
 	//Stores data for a single vertex
 	struct Vertex {
@@ -37,11 +35,12 @@ namespace shaderz {
 	MeshData createTorus(float radius, float thickness, int segments);
 	MeshData createQuad(glm::vec3 bottomLeft, glm::vec3 bottomRight, glm::vec3 topRight, glm::vec3 topLeft);
 	//David Amidon
-	MeshData createTerrain(float size, int segments, unsigned char* terrainTexture);
+	MeshData createTerrain(float size, int segments, float* terrainTexture);
 
 	class Mesh {
 	public:
 		Mesh(const MeshData& meshData);
+		~Mesh();
 		void draw(bool drawAsPoints = false, bool drawWireframe = false); //If drawAsPoints is true, use GL_POINTS instead of GL_TRIANGLES for the draw call
 		void load(const MeshData& meshData);
 	private:

@@ -378,7 +378,7 @@ namespace shaderz {
 
 		return m;	
 	}
-	MeshData createTerrain(float size, int segments, unsigned char* terrainTexture)
+	MeshData createTerrain(float size, int segments, float* terrainTexture)
 	{
 		MeshData m;
 
@@ -386,31 +386,30 @@ namespace shaderz {
 		int numOfVerticies = (segments + 1) * (segments + 1);
 		m.vertices.reserve(numOfVerticies);
 
-		float sampleOffset = ((float)size / segments);
+		float sampleOffset = (float)size / segments;
+		float halfSize = size / 2.0f;
 
 		auto getSample = [&](int r, int c) -> float {
 			r = std::max(0, std::min(r, segments));
 			c = std::max(0, std::min(c, segments));
 
-			float xPos = size * ((float)c / segments) - (size / 2);
-			float zPos = size * ((float)r / segments) - (size / 2);
-			float distanceToCenter = sqrt(pow(xPos, 2) + pow(zPos, 2));
+			int index = ((segments - r) * (segments + 1)) + c;
 
-			unsigned char texValue = terrainTexture[r * (segments + 1) + c];
-			float height = ((texValue / 127.5f) - 1.0f) - (5 * distanceToCenter) / size;
+			float texValue = terrainTexture[index];
 
-			return height;
+			return texValue;
 		};
 
 		//Create Verticies
 		for (size_t row = 0; row <= segments; row++)
 		{
+			float zPos = row * sampleOffset - halfSize;
+
 			for (size_t col = 0; col <= segments; col++)
 			{
 				Vertex v;
 
-				float xPos = size * ((float)col / segments) - (size / 2);
-				float zPos = size * ((float)row / segments) - (size / 2);
+				float xPos = col * sampleOffset - halfSize;
 
 				//Position
 				v.pos.x = xPos;
@@ -466,6 +465,8 @@ namespace shaderz {
 	//Creates a new OpenGL VAO, VBO, and EBO, filling the VBO with vertices, EBO with indices
 	Mesh::Mesh(const MeshData& meshData)
 	{
+		std::cout << "Creating Mesh" << std::endl;
+
 		m_numVertices = meshData.vertices.size();
 		m_numIndices = meshData.indices.size();
 
@@ -494,6 +495,14 @@ namespace shaderz {
 		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 		glEnableVertexAttribArray(2);
 		glBindVertexArray(0);
+	}
+	Mesh::~Mesh()
+	{
+		std::cout << "Deleting Mesh" << std::endl;
+
+		if (m_vao != 0) glDeleteVertexArrays(1, &m_vao);
+		if (m_vbo != 0) glDeleteBuffers(1, &m_vbo);
+		if (m_ebo != 0) glDeleteBuffers(1, &m_ebo);
 	}
 
 	//Draws a mesh. Just binds the VAO and does a draw call.

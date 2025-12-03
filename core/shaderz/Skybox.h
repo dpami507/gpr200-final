@@ -10,24 +10,36 @@
 #include "../ew/external/glad.h"
 #include "../ew/external/stb_image.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "Shader.h"
+
+//this is a change
 
 namespace shaderz {
 	//David Amidon
 	class Skybox
 	{
 	public:
-		Skybox(Shader& skyboxShader);
-		unsigned int loadCubemap();
+		Skybox(Shader& skyboxShader, const std::string& hdrFile);
+		void loadCubemap();
 		void createSkybox();
+
 		void bind();
-		void draw();
+		void draw(glm::mat4 view, glm::mat4 projection);
+
+		void CheckError(std::string location);
+
 	private:
 		unsigned int skyboxVAO, skyboxVBO;
+
 		unsigned int cubemapTexture;
-		unsigned int textureID;
 		int width, height, nrChannels;
+
 		Shader* skyboxShader;
+
+		std::string hdrFile;
 		std::vector<std::string> faces
 		{
 			"assets/skybox/right.jpg",
