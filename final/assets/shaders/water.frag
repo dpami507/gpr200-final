@@ -16,7 +16,7 @@ void main()
     vec3 reflectDir = reflect(-viewDir, Normal);
     vec3 skyboxReflection = texture(skybox, reflectDir).rgb;
 
-    float alpha = waveCalc * 0.1 + 0.45;
+    float alpha = waveCalc * 0.05 + 0.45;
     vec3 waveColor = mix(vec3(0.1, 0.3, 0.8), skyboxReflection, .5);
 
     FragColor = vec4(waveColor, alpha);
