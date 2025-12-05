@@ -3,33 +3,46 @@
 //David Amidon
 namespace shaderz {
 
-	GLuint defaultBlackID;
-	GLuint defaultWhiteID;
+	GLuint defaultBlackID = 0;
+	GLuint defaultWhiteID = 0;
+	GLuint defaultNormalID = 0;
+	GLuint defaultRoughnessID = 0;
 
-	void DefaultWhite()
+	void createDefaultTextures()
 	{
-		std::cout << "Creating Default White\n";
-		unsigned char data[] = { 255,255,255,255 };
+		if (defaultWhiteID != 0) return;
 
+		std::cout << "Creating Default Textures\n";
+
+		// White texture
+		unsigned char whiteData[] = { 255, 255, 255, 255 };
 		glGenTextures(1, &defaultWhiteID);
 		glBindTexture(GL_TEXTURE_2D, defaultWhiteID);
-
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, whiteData);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	}
 
-	void DefaultBlack()
-	{
-		std::cout << "Creating Default Black\n";
-		unsigned char data[] = { 0,0,0,255 };
-
+		// Black texture
+		unsigned char blackData[] = { 0, 0, 0, 255 };
 		glGenTextures(1, &defaultBlackID);
 		glBindTexture(GL_TEXTURE_2D, defaultBlackID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, blackData);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		// Normal map
+		unsigned char normalData[] = { 128, 128, 255, 255 };
+		glGenTextures(1, &defaultNormalID);
+		glBindTexture(GL_TEXTURE_2D, defaultNormalID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, normalData);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+		// Roughness default
+		unsigned char roughnessData[] = { 128, 128, 128, 255 };
+		glGenTextures(1, &defaultRoughnessID);
+		glBindTexture(GL_TEXTURE_2D, defaultRoughnessID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, roughnessData);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
@@ -47,12 +60,11 @@ namespace shaderz {
 		this->metallic = metallic;
 		this->ao = ao;
 
-		DefaultBlack();
+		createDefaultTextures();
 	}
 	void PBRMaterial::use()
 	{
 		shader->use();
-
 		shader->setVec2("uvTiling", uvTiling);
 
 		shader->setInt("albedoMap", 0);
@@ -60,8 +72,8 @@ namespace shaderz {
 			albedo->Bind(0);
 		else
 		{
-			glActiveTexture(GL_TEXTURE0 + 0);
-			glBindTexture(GL_TEXTURE_2D, defaultBlackID);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, defaultWhiteID); //white
 		}
 
 		shader->setInt("roughnessMap", 1);
@@ -69,8 +81,8 @@ namespace shaderz {
 			roughness->Bind(1);
 		else
 		{
-			glActiveTexture(GL_TEXTURE0 + 1);
-			glBindTexture(GL_TEXTURE_2D, defaultBlackID);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, defaultRoughnessID); //grey
 		}
 
 		shader->setInt("normalMap", 2);
@@ -78,8 +90,8 @@ namespace shaderz {
 			normal->Bind(2);
 		else
 		{
-			glActiveTexture(GL_TEXTURE0 + 2);
-			glBindTexture(GL_TEXTURE_2D, defaultBlackID);
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, defaultNormalID); //magenta
 		}
 
 		shader->setInt("metallicMap", 3);
@@ -87,8 +99,8 @@ namespace shaderz {
 			metallic->Bind(3);
 		else
 		{
-			glActiveTexture(GL_TEXTURE0 + 3);
-			glBindTexture(GL_TEXTURE_2D, defaultBlackID);
+			glActiveTexture(GL_TEXTURE3);
+			glBindTexture(GL_TEXTURE_2D, defaultBlackID); //black
 		}
 
 		shader->setInt("aoMap", 4);
@@ -96,8 +108,8 @@ namespace shaderz {
 			ao->Bind(4);
 		else
 		{
-			glActiveTexture(GL_TEXTURE0 + 4);
-			glBindTexture(GL_TEXTURE_2D, defaultBlackID);
+			glActiveTexture(GL_TEXTURE4);
+			glBindTexture(GL_TEXTURE_2D, defaultWhiteID); //white
 		}
 	}
 
@@ -114,7 +126,7 @@ namespace shaderz {
 		this->specular = specular;
 		this->shininess = shininess;
 
-		DefaultWhite();
+		createDefaultTextures();
 	}
 
 	void LitMaterial::updateMaterialSettings(const glm::vec3& diffuse, const glm::vec3& specular, const float& shininess)
@@ -142,7 +154,7 @@ namespace shaderz {
 			texture->Bind(0);
 		else
 		{
-			glActiveTexture(GL_TEXTURE0 + 0);
+			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, defaultWhiteID);
 		}
 	}
@@ -155,7 +167,7 @@ namespace shaderz {
 		this->uvTiling = texture.second;
 		this->color = color;
 
-		DefaultWhite();
+		createDefaultTextures();
 	}
 
 	void UnlitMaterial::use()
