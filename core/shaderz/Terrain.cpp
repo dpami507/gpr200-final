@@ -55,14 +55,14 @@ namespace shaderz {
     }
 
 	//Constructor to set up noise, segments and textures
-	Terrain::Terrain(const Noise& noise, float size, int segments) : Object(*mesh)
+	Terrain::Terrain(const Noise& noise, float size, float heightScale, int segments) : Object(*mesh)
 	{
 		this->noise = noise;
         this->segments = segments;
 
         GenerateNoiseTexture(size, segments);
 
-		MeshData terrainData = createTerrain(size, segments, noiseData);
+		MeshData terrainData = createTerrain(size, segments, heightScale, noiseData);
 		this->mesh = new Mesh(terrainData);
 
 		std::cout << "Created Terrain Object\n";
@@ -84,7 +84,7 @@ namespace shaderz {
 	}
 
 	//Reloads MeshData to update values
-	void Terrain::load(float size, int segments, Noise noise)
+	void Terrain::load(float size, int segments, float heightScale, Noise noise)
 	{
         this->noise = noise;
 
@@ -93,7 +93,7 @@ namespace shaderz {
 
         GenerateNoiseTexture(size, segments);
 
-		MeshData terrainData = createTerrain(size, segments, noiseData);
+		MeshData terrainData = createTerrain(size, segments, heightScale, noiseData);
 		mesh->load(terrainData);
 	}
 }

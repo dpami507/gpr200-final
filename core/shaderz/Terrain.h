@@ -10,7 +10,7 @@ namespace shaderz {
 	class Terrain : public Object
 	{
 	public:
-		Terrain(const Noise& noise, float size, int segments);
+		Terrain(const Noise& noise, float size, float heightScale, int segments);
 		~Terrain();
 		void GenerateNoiseTexture(float size, int segments);
 
@@ -18,7 +18,7 @@ namespace shaderz {
 		void BindNoiseTexture(int slot);
 
 		void draw(bool drawAsPoints = false, bool drawWireframe = false);
-		void load(float size, int segments, Noise noise);
+		void load(float size, int segments, float heightScale, Noise noise);
 	private:
 		int segments;
 		float* noiseData;

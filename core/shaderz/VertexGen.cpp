@@ -378,7 +378,7 @@ namespace shaderz {
 
 		return m;	
 	}
-	MeshData createTerrain(float size, int segments, float* terrainTexture)
+	MeshData createTerrain(float size, int segments, float heightScale, float* terrainTexture)
 	{
 		MeshData m;
 
@@ -396,6 +396,10 @@ namespace shaderz {
 			int index = ((segments - r) * (segments + 1)) + c;
 
 			float texValue = terrainTexture[index];
+
+			texValue = texValue * 2.0 - 1.0; //Convert from 0-1 to -1 to 1
+			texValue *= heightScale; //Height scale
+			texValue = (texValue + 1.0) * 0.5; //Normalize to 0-1
 
 			return texValue;
 		};

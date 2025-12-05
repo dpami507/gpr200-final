@@ -39,19 +39,19 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 const int SCREEN_WIDTH = 1000;
 const int SCREEN_HEIGHT = 1000;
 
-int objCount = 4;
-
 //Sphere
 int sphereSubdivision = 8;
 float sphereRadius = 1;
 
 //Terrain
-int terrainSubdivision = 16;
-float terrainSize = 1;
-float frequency = 4.0;
+int terrainSubdivision = 256;
+float heightScale = 1;
+float terrainSize = 3;
+float frequency = 1;
 int octaveCount = 4;
 
-float waterHeight = 0.01;
+//Water settings
+float waterHeight = 0.015;
 float waterWidth = 7.5;
 float waterSpeed = 0.3;
 
@@ -65,6 +65,7 @@ const char* itemNames[3] = {
 bool wireframe = false;
 bool point = false;
 
+//Material for terrain
 struct Material
 {
 	Texture2D* color;
@@ -170,7 +171,7 @@ int main() {
 	terrainTextures.push_back({ &snowColor,	 &snowAO,	&snowNorm,	&snowRough,	0.75, 5 });
 
 	//Create Terrain Object
-	Terrain terrainObj(perlinNoise, terrainSize, terrainSubdivision);
+	Terrain terrainObj(perlinNoise, terrainSize, heightScale, terrainSubdivision);
 
 	//Objects
 	Object heightObj(plane);
@@ -178,7 +179,8 @@ int main() {
 
 	//Create Skybox
 	Shader skyboxShader("assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
-	Skybox skybox(skyboxShader, "assets/warm.hdr");
+	Shader hdrToCubemapShader("assets/shaders/hdrToCubemap.vert", "assets/shaders/hdrToCubemap.frag");
+	Skybox skybox(skyboxShader, hdrToCubemapShader, "assets/sky.hdr");
 
 	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -192,7 +194,7 @@ int main() {
 		Time::Update();
 
 		//Clear framebuffer
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Setup objects
@@ -204,16 +206,17 @@ int main() {
 			//Set up texture for Terrain
 			terrainShader.use();
 			terrainShader.setFloat("frequency", frequency);
-			terrainShader.setInt("octaves", octaveCount + 1);
+			terrainShader.setInt("octaves", octaveCount + 2);
 			terrainShader.setVec3("viewPos", camera.getPosition());
-
-			terrainShader.setVec3("lightDirection", glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f)));
+			//Set light properties
+			terrainShader.setVec3("lightDirection", glm::normalize(glm::vec3(-1.0f, -1.0f, -0.5f)));
 			terrainShader.setVec3("lightColor", glm::vec3(1.0f));
 			terrainShader.setFloat("lightIntensity", 1.0f);
-
+			//Bind skybox
 			skybox.bind(0);
 			terrainShader.setInt("skybox", 0);
-
+			terrainShader.setFloat("heightScale", heightScale);
+			//Bind terrain textures
 			for(int i = 0; i < terrainTextures.size(); i++)
 			{
 				int baseUnit = 1 + (i * 4);
@@ -234,10 +237,12 @@ int main() {
 				terrainShader.setFloat("materials[" + std::to_string(i) + "].uvTile", terrainTextures[i].uvTile);
 			}
 			terrainShader.setInt("numMaterials", terrainTextures.size());
-
+			//Draw Terrain
 			terrainObj.transform.position = glm::vec3(0, 0, 0);
 			terrainShader.setMat4("model", terrainObj.transform.GetModel());
 			terrainObj.draw(point, wireframe);
+
+			/////////////////////////////////////////////////
 
 			//Set UnlitShader
 			unlitShader.use();
@@ -248,20 +253,22 @@ int main() {
 			terrainObj.BindNoiseTexture(0);
 			unlitShader.setInt("texture1", 0);
 
-			heightObj.transform.position = glm::vec3(0, 0, 0);
+			heightObj.transform.position = glm::vec3(0, -heightScale / 2, 0);
 			unlitShader.setMat4("model", heightObj.transform.GetModel());
 			heightObj.draw(point, wireframe);
+
+			/////////////////////////////////////////////////
 
 			//Set WaterShader
 			waterShader.use();
 			waterShader.setMat4("projectionView", camera.getProjectionView());
 			waterShader.setVec3("viewPos", camera.getPosition());
-
+			//Wave settings
 			waterShader.setFloat("uTime", Time::time);
 			waterShader.setFloat("w", waterWidth);
 			waterShader.setFloat("h", waterHeight);
 			waterShader.setFloat("s", waterSpeed);
-
+			//Skybox
 			skybox.bind(0);
 			waterShader.setInt("skybox", 0);
 
@@ -273,6 +280,7 @@ int main() {
 			waterObj.draw(point, wireframe);
 		}
 
+		//Draw Skybox
 		skybox.draw(camera.getView(), camera.getProjection());
 
 		//ImGui
@@ -301,8 +309,9 @@ int main() {
 
 			if (ImGui::CollapsingHeader("Terrain Settings"))
 			{
-				ImGui::SliderInt("Terrain Segments", &terrainSubdivision, 1, 512); 
+				ImGui::SliderInt("Terrain Segments", &terrainSubdivision, 1, 2048); 
 				ImGui::SliderFloat("Terrain Size", &terrainSize, 1, 16);
+				ImGui::SliderFloat("Hegiht Scale", &heightScale, 1, 3);
 				ImGui::SliderInt("Octave Count", &octaveCount, 1, 8);
 				ImGui::SliderFloat("Frequency", &frequency, 1.0, 8.0);
 
@@ -310,7 +319,7 @@ int main() {
 				{
 					Noise perlinNoise(octaveCount, frequency);
 
-					terrainObj.load(terrainSize, terrainSubdivision, perlinNoise);
+					terrainObj.load(terrainSize, terrainSubdivision, heightScale, perlinNoise);
 					plane.load(createPlane(terrainSize, terrainSize, terrainSubdivision, true));
 				}
 			}

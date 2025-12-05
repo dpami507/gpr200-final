@@ -7,6 +7,7 @@ in vec3 Normal;
 
 uniform float frequency;
 uniform int octaves;
+uniform float heightScale;
 
 struct Material {
     sampler2D colorTex;
@@ -107,6 +108,10 @@ void main()
 
     float height = octavePerlin(pos.x, pos.y);
 
+    height = height * 2.0 - 1.0; //Convert from 0-1 to -1 to 1
+	height *= heightScale; //Height scale
+	height = (height + 1.0) * 0.5; //Normalize to 0-1
+
     //Get texture sample based on height
     if (numMaterials == 0)
     {
@@ -154,7 +159,7 @@ void main()
     }
     
     float reflectionStrength = 1.0 - rough;
-    finalColor = mix(finalColor, skyboxReflection, reflectionStrength * 0.3);
+    finalColor = mix(finalColor, skyboxReflection, reflectionStrength * 0.05);
     FragColor = vec4(finalColor, 1.0);
 }
 
