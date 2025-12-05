@@ -107,9 +107,9 @@ namespace shaderz {
 	}
 
 	//Bind the cubemap texture
-	void Skybox::bind()
+	void Skybox::bind(int slot)
 	{
-		glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE0 + slot);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 	}
 

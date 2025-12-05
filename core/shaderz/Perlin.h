@@ -11,7 +11,7 @@ namespace shaderz
 	{
 	public:
 		Noise();
-		Noise(int octaves, int frequency);
+		Noise(int octaves, float frequency);
 		~Noise();
 
 		float grad(int hash, float x, float y);
@@ -23,10 +23,12 @@ namespace shaderz
 		void SetOctaves(int octaves) { this->octaves = octaves; }
 		void SetFrequency(float frequency) { this->frequency = frequency; }
 
+		int GetFrequency() const { return frequency; }
+		int GetOctaves() const { return octaves; }
+
 	private:
 		int octaves = 4;
 		float frequency = 0.5f;
-		float persistence = 0.5f;
 	};
 }
 

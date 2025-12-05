@@ -41,11 +41,6 @@ const int SCREEN_HEIGHT = 1000;
 
 int objCount = 4;
 
-//Light Settings
-glm::vec3 lightColor = glm::vec3(1, 1, 1);
-float lightStrength = 1;
-float lightFalloff = 10;
-
 //Sphere
 int sphereSubdivision = 8;
 float sphereRadius = 1;
@@ -69,6 +64,16 @@ const char* itemNames[3] = {
 };
 bool wireframe = false;
 bool point = false;
+
+struct Material
+{
+	Texture2D* color;
+	Texture2D* ao;
+	Texture2D* normal;
+	Texture2D* roughness;
+	float threshold;
+	float uvTile;
+};
 
 int main() {
 	//Create Window
@@ -119,6 +124,7 @@ int main() {
 	Texture2D grassColor("assets/materials/grass/GrassColor.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D grassAO("assets/materials/grass/GrassAO.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D grassNorm("assets/materials/grass/GrassNorm.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D grassRough("assets/materials/grass/GrassRough.jpg", GL_NEAREST, GL_REPEAT);
 
 	//Rock Texture
 	Texture2D rockColor("assets/materials/rock/RockColor.jpg", GL_NEAREST, GL_REPEAT);
@@ -128,21 +134,22 @@ int main() {
 
 	//Sand Texture
 	Texture2D sandColor("assets/materials/sand/SandColor.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D sandAO("assets/materials/sand/SandAO.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D sandNorm("assets/materials/sand/SandNorm.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D sandRough("assets/materials/sand/SandRough.jpg", GL_NEAREST, GL_REPEAT);
 
 	//Dirt Texture
 	Texture2D dirtColor("assets/materials/dirt/DirtColor.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D dirtAO("assets/materials/dirt/DirtAO.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D dirtNorm("assets/materials/dirt/DirtNorm.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D dirtRough("assets/materials/dirt/DirtRough.jpg", GL_NEAREST, GL_REPEAT);
 
 	//Snow Texture
 	Texture2D snowColor("assets/materials/snow/SnowColor.jpg", GL_NEAREST, GL_REPEAT);
- 
-	//Gold Texture
-	Texture2D goldColor("assets/GoldColor.jpg", GL_NEAREST, GL_REPEAT);
-	Texture2D goldMetal("assets/GoldMetal.jpg", GL_NEAREST, GL_REPEAT);
-	Texture2D goldNorm("assets/GoldNorm.jpg", GL_NEAREST, GL_REPEAT);
-	Texture2D goldRough("assets/GoldRough.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D snowAO("assets/materials/snow/SnowAO.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D snowNorm("assets/materials/snow/SnowNorm.jpg", GL_NEAREST, GL_REPEAT);
+	Texture2D snowRough("assets/materials/snow/SnowRough.jpg", GL_NEAREST, GL_REPEAT);
 
-	PBRMaterial landMaterial(&pbrShader, glm::vec2(1.0f), &grassColor, nullptr, &grassNorm, nullptr, &grassAO);
-	PBRMaterial goldMaterial(&pbrShader, glm::vec2(1.0f), &goldColor, &goldRough, &goldNorm, &goldMetal, nullptr);
 	UnlitMaterial waterMaterial(&waterShader, { nullptr, glm::vec2(1) }, glm::vec3(255, 255, 255));
 	UnlitMaterial blankMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(255, 255, 255));
 	UnlitMaterial lightMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(255, 255, 255));
@@ -151,24 +158,19 @@ int main() {
 	Mesh sphere(createSphere(sphereRadius, sphereSubdivision));
 	Mesh plane(createPlane(terrainSize, terrainSize, terrainSubdivision, true));
 
-
+	//Create noise for terrain
 	Noise perlinNoise(octaveCount, frequency);
 
-	std::vector<std::pair<Texture2D*, std::pair<float, float>>> terrainTextures;
+	//Create array of terrain textures
+	std::vector<Material> terrainTextures;
+	terrainTextures.push_back({ &dirtColor,	 &dirtAO,	&dirtNorm,	&dirtRough,	0.0, 5 });
+	terrainTextures.push_back({ &sandColor,	 &sandAO,	&sandNorm,	&sandRough,	0.45, 5 });
+	terrainTextures.push_back({ &grassColor, &grassAO,  &grassNorm, &grassRough, 0.5, 5 });
+	terrainTextures.push_back({ &rockColor,	 &rockAO,	&rockNorm,	&rockRough,	0.6, 5 });
+	terrainTextures.push_back({ &snowColor,	 &snowAO,	&snowNorm,	&snowRough,	0.75, 5 });
 
-	terrainTextures.push_back({ &dirtColor,		{0.0,  5} });
-	terrainTextures.push_back({ &sandColor,		{0.45, 5} });
-	terrainTextures.push_back({ &grassColor,	{0.5,  5} });
-	terrainTextures.push_back({ &rockColor,		{0.6,  5} });
-	terrainTextures.push_back({ &snowColor,		{0.75, 5} });
-
+	//Create Terrain Object
 	Terrain terrainObj(perlinNoise, terrainSize, terrainSubdivision);
-
-	//Light Object
-	Object lightObject(sphere);
-	lightObject.transform.position = glm::vec3(0.0, 2.0, 0.0);
-	lightObject.transform.rotation = glm::vec3(0.0);
-	lightObject.transform.scale = glm::vec3(0.5);
 
 	//Objects
 	Object heightObj(plane);
@@ -195,37 +197,51 @@ int main() {
 
 		//Setup objects
 		{	
-			skybox.bind();
-
 			//Set TerrainShader
 			terrainShader.use();
 			terrainShader.setMat4("projectionView", camera.getProjectionView());
-
-			//Set UnlitShader
-			unlitShader.use();
-			unlitShader.setMat4("projectionView", camera.getProjectionView());
-
-			//Set WaterShader
-			waterShader.use();
-			waterShader.setMat4("projectionView", camera.getProjectionView());
 
 			//Set up texture for Terrain
 			terrainShader.use();
 			terrainShader.setFloat("frequency", frequency);
 			terrainShader.setInt("octaves", octaveCount + 1);
+			terrainShader.setVec3("viewPos", camera.getPosition());
+
+			terrainShader.setVec3("lightDirection", glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f)));
+			terrainShader.setVec3("lightColor", glm::vec3(1.0f));
+			terrainShader.setFloat("lightIntensity", 1.0f);
+
+			skybox.bind(0);
+			terrainShader.setInt("skybox", 0);
 
 			for(int i = 0; i < terrainTextures.size(); i++)
 			{
-				terrainTextures[i].first->Bind(i);
-				terrainShader.setInt("textures[" + std::to_string(i) + "]", i);
-				terrainShader.setFloat("thresholds[" + std::to_string(i) + "]", terrainTextures[i].second.first);
-				terrainShader.setFloat("uvTile[" + std::to_string(i) + "]", terrainTextures[i].second.second);
+				int baseUnit = 1 + (i * 4);
+
+				terrainTextures[i].color->Bind(baseUnit + 0);
+				terrainShader.setInt("materials[" + std::to_string(i) + "].colorTex",	baseUnit + 0);
+
+				terrainTextures[i].ao->Bind(baseUnit + 1);
+				terrainShader.setInt("materials[" + std::to_string(i) + "].aoTex",		baseUnit + 1);
+
+				terrainTextures[i].normal->Bind(baseUnit + 2);
+				terrainShader.setInt("materials[" + std::to_string(i) + "].normalTex",	baseUnit + 2);
+
+				terrainTextures[i].roughness->Bind(baseUnit + 3);
+				terrainShader.setInt("materials[" + std::to_string(i) + "].roughTex",	baseUnit + 3);
+
+				terrainShader.setFloat("materials[" + std::to_string(i) + "].threshold", terrainTextures[i].threshold);
+				terrainShader.setFloat("materials[" + std::to_string(i) + "].uvTile", terrainTextures[i].uvTile);
 			}
-			terrainShader.setInt("numTextures", terrainTextures.size());
+			terrainShader.setInt("numMaterials", terrainTextures.size());
 
 			terrainObj.transform.position = glm::vec3(0, 0, 0);
 			terrainShader.setMat4("model", terrainObj.transform.GetModel());
 			terrainObj.draw(point, wireframe);
+
+			//Set UnlitShader
+			unlitShader.use();
+			unlitShader.setMat4("projectionView", camera.getProjectionView());
 
 			//Set up texture to show heightmap
 			blankMaterial.use();
@@ -236,25 +252,25 @@ int main() {
 			unlitShader.setMat4("model", heightObj.transform.GetModel());
 			heightObj.draw(point, wireframe);
 
-			//Create Water Plane
-			waterMaterial.use();
-			waterObj.transform.position = glm::vec3(0, 0.45f, 0);
+			//Set WaterShader
+			waterShader.use();
+			waterShader.setMat4("projectionView", camera.getProjectionView());
+			waterShader.setVec3("viewPos", camera.getPosition());
 
 			waterShader.setFloat("uTime", Time::time);
 			waterShader.setFloat("w", waterWidth);
 			waterShader.setFloat("h", waterHeight);
 			waterShader.setFloat("s", waterSpeed);
 
+			skybox.bind(0);
+			waterShader.setInt("skybox", 0);
+
+			//Create Water Plane
+			waterMaterial.use();
+			waterObj.transform.position = glm::vec3(0, 0.45f, 0);
+
 			waterShader.setMat4("model", waterObj.transform.GetModel());
 			waterObj.draw(point, wireframe);
-		}
-
-		//Set up Light Object
-		{
-			//Use Shader
-			lightMaterial.use();
-			unlitShader.setMat4("model", lightObject.transform.GetModel());
-			lightObject.draw(point, wireframe);
 		}
 
 		skybox.draw(camera.getView(), camera.getProjection());
@@ -266,12 +282,6 @@ int main() {
 			ImGui::NewFrame();
 
 			ImGui::Begin("Settings");
-
-			if (ImGui::CollapsingHeader("Light Settings"))
-			{
-				ImGui::DragFloat3("Light Position", &lightObject.transform.position.x, 0.1f);
-				ImGui::ColorEdit3("Light Color", &lightColor.r);
-			}
 
 			if (ImGui::CollapsingHeader("Geometry Settings"))
 			{
@@ -294,7 +304,7 @@ int main() {
 				ImGui::SliderInt("Terrain Segments", &terrainSubdivision, 1, 512); 
 				ImGui::SliderFloat("Terrain Size", &terrainSize, 1, 16);
 				ImGui::SliderInt("Octave Count", &octaveCount, 1, 8);
-				ImGui::SliderFloat("Frequency", &frequency, 1, 8);
+				ImGui::SliderFloat("Frequency", &frequency, 1.0, 8.0);
 
 				if (ImGui::Button("Regenerate Terrain"))
 				{

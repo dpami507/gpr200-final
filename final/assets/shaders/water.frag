@@ -7,22 +7,17 @@ in vec3 Normal;
 
 in float waveCalc;
 
-uniform sampler2D texture1;
-uniform vec2 uvTiling;
-uniform vec3 color;
+uniform samplerCube skybox;
+uniform vec3 viewPos;
 
 void main()
 {
-    vec2 uv = TexCoord;
-    uv.x *= uvTiling.x;
-    uv.y *= uvTiling.y;
-    uv = fract(uv);
+    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 reflectDir = reflect(-viewDir, Normal);
+    vec3 skyboxReflection = texture(skybox, reflectDir).rgb;
 
-    vec4 tex = texture(texture1, uv);
+    float alpha = waveCalc * 0.2 + 0.7;
+    vec3 waveColor = mix(vec3(0.1, 0.3, 0.8), skyboxReflection, .5);
 
-    float alpha = waveCalc * 0.1 + 0.5;
-    vec3 waterColor = vec3(0, 64, 255);
-
-    vec3 result = (vec3(tex) * (color / 255));
-    FragColor = vec4(result * (waterColor / 255), alpha);
+    FragColor = vec4(waveColor, alpha);
 }

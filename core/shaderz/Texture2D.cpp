@@ -28,6 +28,8 @@ namespace shaderz {
 
 			glTexImage2D(GL_TEXTURE_2D, 0, format, m_width, m_height, 0, format, GL_UNSIGNED_BYTE, m_data);
 			glGenerateMipmap(GL_TEXTURE_2D);
+
+			std::cout << "Texture loaded path: " << filePath << " (channels: " << m_nrChannels << ")" << std::endl;
 		}
 		else
 		{

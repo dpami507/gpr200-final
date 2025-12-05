@@ -73,7 +73,7 @@ namespace shaderz {
 		else
 		{
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, defaultWhiteID);
+			glBindTexture(GL_TEXTURE_2D, defaultWhiteID); //white
 		}
 
 		shader->setInt("roughnessMap", 1);
@@ -82,7 +82,7 @@ namespace shaderz {
 		else
 		{
 			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, defaultRoughnessID);
+			glBindTexture(GL_TEXTURE_2D, defaultRoughnessID); //grey
 		}
 
 		shader->setInt("normalMap", 2);
@@ -91,7 +91,7 @@ namespace shaderz {
 		else
 		{
 			glActiveTexture(GL_TEXTURE2);
-			glBindTexture(GL_TEXTURE_2D, defaultNormalID);
+			glBindTexture(GL_TEXTURE_2D, defaultNormalID); //magenta
 		}
 
 		shader->setInt("metallicMap", 3);
@@ -100,7 +100,7 @@ namespace shaderz {
 		else
 		{
 			glActiveTexture(GL_TEXTURE3);
-			glBindTexture(GL_TEXTURE_2D, defaultBlackID);
+			glBindTexture(GL_TEXTURE_2D, defaultBlackID); //black
 		}
 
 		shader->setInt("aoMap", 4);
@@ -109,7 +109,7 @@ namespace shaderz {
 		else
 		{
 			glActiveTexture(GL_TEXTURE4);
-			glBindTexture(GL_TEXTURE_2D, defaultWhiteID);
+			glBindTexture(GL_TEXTURE_2D, defaultWhiteID); //white
 		}
 	}
 

@@ -26,7 +26,7 @@ namespace shaderz {
 		void loadCubemap();
 		void createSkybox();
 
-		void bind();
+		void bind(int slot = 0);
 		void draw(glm::mat4 view, glm::mat4 projection);
 
 		void CheckError(std::string location);

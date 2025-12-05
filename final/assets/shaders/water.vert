@@ -19,13 +19,14 @@ uniform float s;
 
 void main()
 {
+	//Create Waves
 	vec3 pos = aPos;
-
 	pos.y += sin(w * ((pos.x + pos.z) + (uTime * s))) * h;
+	waveCalc = pos.y / h;
 
+	//Set up out variables
 	gl_Position = projectionView * model * vec4(pos, 1.0);
 	TexCoord = vec2(aTexCoord.x, aTexCoord.y);
 	FragPos = vec3(model * vec4(pos, 1.0));
 	Normal = mat3(transpose(inverse(model))) * aNormal;  
-	waveCalc = pos.y / h;
 }
