@@ -52,8 +52,8 @@ int octaveCount = 4;
 
 //Water settings
 float waterHeight = 0.015;
-float waterWidth = 7.5;
-float waterSpeed = 0.3;
+float waterWidth = 6;
+float waterSpeed = 0.05;
 
 //Drawing Options
 int currShade = 2;
@@ -151,6 +151,9 @@ int main() {
 	Texture2D snowNorm("assets/materials/snow/SnowNorm.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D snowRough("assets/materials/snow/SnowRough.jpg", GL_NEAREST, GL_REPEAT);
 
+	//Water Noise
+	Texture2D waterNoise("assets/cellularNoise.jpg", GL_LINEAR, GL_REPEAT);
+
 	UnlitMaterial waterMaterial(&waterShader, { nullptr, glm::vec2(1) }, glm::vec3(255, 255, 255));
 	UnlitMaterial blankMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(255, 255, 255));
 	UnlitMaterial lightMaterial(&unlitShader, { nullptr, glm::vec2(1) }, glm::vec3(255, 255, 255));
@@ -164,7 +167,7 @@ int main() {
 
 	//Create array of terrain textures
 	std::vector<Material> terrainTextures;
-	terrainTextures.push_back({ &dirtColor,	 &dirtAO,	&dirtNorm,	&dirtRough,	0.0, 5 });
+	terrainTextures.push_back({ &dirtColor,	 &dirtAO,	&dirtNorm,	&dirtRough,	0.0, 10 });
 	terrainTextures.push_back({ &sandColor,	 &sandAO,	&sandNorm,	&sandRough,	0.45, 5 });
 	terrainTextures.push_back({ &grassColor, &grassAO,  &grassNorm, &grassRough, 0.5, 5 });
 	terrainTextures.push_back({ &rockColor,	 &rockAO,	&rockNorm,	&rockRough,	0.6, 5 });
@@ -265,12 +268,15 @@ int main() {
 			waterShader.setVec3("viewPos", camera.getPosition());
 			//Wave settings
 			waterShader.setFloat("uTime", Time::time);
-			waterShader.setFloat("w", waterWidth);
-			waterShader.setFloat("h", waterHeight);
-			waterShader.setFloat("s", waterSpeed);
+			waterShader.setFloat("width", waterWidth);
+			waterShader.setFloat("height", waterHeight);
+			waterShader.setFloat("speed", waterSpeed);
 			//Skybox
 			skybox.bind(0);
 			waterShader.setInt("skybox", 0);
+			//Water Noise
+			waterNoise.Bind(1);
+			waterShader.setInt("cellularNoise", 1);
 
 			//Create Water Plane
 			waterMaterial.use();
@@ -313,7 +319,7 @@ int main() {
 				ImGui::SliderFloat("Terrain Size", &terrainSize, 1, 16);
 				ImGui::SliderFloat("Hegiht Scale", &heightScale, 1, 3);
 				ImGui::SliderInt("Octave Count", &octaveCount, 1, 8);
-				ImGui::SliderFloat("Frequency", &frequency, 1.0, 8.0);
+				ImGui::SliderFloat("Frequency", &frequency, 0.0, 8.0);
 
 				if (ImGui::Button("Regenerate Terrain"))
 				{
