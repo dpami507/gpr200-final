@@ -16,7 +16,7 @@
 
 #include "./shaderz/Shader.h"
 #include "./shaderz/Texture2D.h"
-#include "./shaderz/Camera.h"
+//#include "./shaderz/Camera.h"
 #include "./shaderz/Transform.h"
 #include "./shaderz/Time.h"
 #include "./shaderz/VertexGen.h"
@@ -25,6 +25,7 @@
 #include "./shaderz/Material.h"
 #include "./shaderz/Skybox.h"
 #include "./shaderz/Terrain.h"
+#include "./shaderz/tetraz/sandbox.h"
 
 using namespace shaderz;
 
@@ -36,8 +37,12 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-const int SCREEN_WIDTH = 1000;
-const int SCREEN_HEIGHT = 1000;
+int objCount = 4;
+
+//Light Settings
+glm::vec3 lightColor = glm::vec3(1, 1, 1);
+float lightStrength = 1;
+float lightFalloff = 10;
 
 //Sphere
 int sphereSubdivision = 8;
@@ -83,7 +88,7 @@ int main() {
 		printf("GLFW failed to init!");
 		return 1;
 	}
-	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "final... what is this a countdown?", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(shaderz::SCREEN_WIDTH, shaderz::SCREEN_HEIGHT, "final... what is this a countdown?", NULL, NULL);
 	if (window == NULL) {
 		printf("GLFW failed to create window");
 		return 1;
@@ -185,7 +190,7 @@ int main() {
 	Shader hdrToCubemapShader("assets/shaders/hdrToCubemap.vert", "assets/shaders/hdrToCubemap.frag");
 	Skybox skybox(skyboxShader, hdrToCubemapShader, "assets/sky.hdr");
 
-	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+	glViewport(0, 0, shaderz::SCREEN_WIDTH, shaderz::SCREEN_HEIGHT);
 
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
