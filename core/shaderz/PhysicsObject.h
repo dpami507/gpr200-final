@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef PHYSOBJECT_H
 #define PHYSOBJECT_H
 

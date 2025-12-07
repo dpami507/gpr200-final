@@ -35,6 +35,7 @@ using namespace shaderz;
 void processInput(GLFWwindow* window);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 int objCount = 4;
@@ -81,6 +82,9 @@ struct Material
 	float uvTile;
 };
 
+// terrain buffer
+Terrain* gTerrain = nullptr;
+
 int main() {
 	//Create Window
 	printf("Creating World...\n");
@@ -106,7 +110,8 @@ int main() {
 	glfwSetWindowUserPointer(window, &camera);
 
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetCursorPosCallback(window, mouse_callback); 
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
 	//IGUI
@@ -180,6 +185,7 @@ int main() {
 
 	//Create Terrain Object
 	Terrain terrainObj(perlinNoise, terrainSize, heightScale, terrainSubdivision);
+	gTerrain = &terrainObj;
 
 	//Objects
 	Object heightObj(plane);
@@ -395,6 +401,25 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 
 	//Rotate with offset calculated
 	camera->processMouseMovement(xoffset, yoffset);
+}
+
+// david I was too eepy and couldn't figure out to use your functions so I just added another
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+	{
+		Camera* camera = (Camera*)glfwGetWindowUserPointer(window);
+
+		double mouseX, mouseY;
+		glfwGetCursorPos(window, &mouseX, &mouseY);
+
+		// Terrain object is global in main()
+		extern Terrain terrainObj;    // Forward declare
+		glm::vec3 hit = shaderz::rayCollision(gTerrain, camera, (int)mouseX, (int)mouseY);
+
+		std::cout << "Clicked terrain vertex: "
+			<< hit.x << ", " << hit.y << ", " << hit.z << std::endl;
+	}
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)

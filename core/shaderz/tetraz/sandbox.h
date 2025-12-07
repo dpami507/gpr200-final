@@ -1,4 +1,6 @@
 #pragma once
+
+#include "../Object.h"
 #include "../Camera.h"
 
 namespace shaderz {
@@ -6,5 +8,5 @@ namespace shaderz {
 	const int SCREEN_HEIGHT = 1000;
 
 	glm::vec3 raycastMouse(Camera* cam, int mouse_x, int mouse_y);
-	//glm::vec3 rayCollision();
+	glm::vec3 rayCollision(Object* obj, Camera* cam, int mouse_x, int mouse_y);
 }

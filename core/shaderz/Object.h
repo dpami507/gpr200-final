@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef OBJECT_H
 #define OBJECT_H
 
@@ -12,9 +14,12 @@ namespace shaderz {
 		void draw(bool drawAsPoints = false, bool drawWireframe = false);
 
 		Transform transform;
-	protected:
+
+		// getter function
+		Mesh* getMesh() { return mesh; } // identifier mesh is undefined
+	protected: // expected an expression
 		Mesh* mesh;
 	};
 }
 
-#endif
+#endif // expected a ;

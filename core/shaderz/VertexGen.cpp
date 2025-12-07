@@ -471,6 +471,10 @@ namespace shaderz {
 	{
 		std::cout << "Creating Mesh" << std::endl;
 
+		// for tetra sanity
+		m_cpuVertices = meshData.vertices;
+		m_cpuIndices = meshData.indices;
+
 		m_numVertices = meshData.vertices.size();
 		m_numIndices = meshData.indices.size();
 
@@ -528,6 +532,9 @@ namespace shaderz {
 	//Reloads MeshData to update values
 	void Mesh::load(const MeshData& meshData)
 	{
+		// set the new meshdata sizes here too
+		m_cpuVertices = meshData.vertices;
+		m_cpuIndices = meshData.indices;
 		//Set new meshData sizes
 		m_numVertices = meshData.vertices.size();
 		m_numIndices = meshData.indices.size();

@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef VERTEXGEN_H
 #define VERTEXGEN_H
 
@@ -43,9 +45,18 @@ namespace shaderz {
 		~Mesh();
 		void draw(bool drawAsPoints = false, bool drawWireframe = false); //If drawAsPoints is true, use GL_POINTS instead of GL_TRIANGLES for the draw call
 		void load(const MeshData& meshData);
+
+		// getter functions
+		const std::vector<Vertex>& getVertices() const { return m_cpuVertices; }
+		const std::vector<unsigned int>& getIndices() const { return m_cpuIndices; }
+
 	private:
 		unsigned int m_vao, m_vbo, m_ebo;
 		unsigned int m_numVertices, m_numIndices;
+
+		// to help me (tetra) get the actual triangles faster
+		std::vector<Vertex> m_cpuVertices;
+		std::vector<unsigned int> m_cpuIndices;
 	};
 }
 
