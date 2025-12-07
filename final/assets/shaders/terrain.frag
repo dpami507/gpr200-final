@@ -7,19 +7,33 @@ in vec3 Normal;
 
 uniform float frequency;
 uniform int octaves;
+uniform float heightScale;
 
-const int MAX_TERRAIN_TEXTURES = 10;
-uniform sampler2D textures[MAX_TERRAIN_TEXTURES];
-uniform float thresholds[MAX_TERRAIN_TEXTURES];
-uniform float uvTile[MAX_TERRAIN_TEXTURES];
+struct Material {
+    sampler2D colorTex;
+    sampler2D aoTex;
+    sampler2D normalTex;
+    sampler2D roughTex;
+    float threshold;
+    float uvTile;
+};
 
-uniform int numTextures;
+const int MAX_TERRAIN_MATERIALS = 5;
+uniform Material materials[MAX_TERRAIN_MATERIALS];
+uniform int numMaterials;
 
 float perlin(float x, float y);
 float octavePerlin(float x, float y);
 float grad(int hash, float x, float y);
 float fade(float t);
 float lerp(float a, float b, float t);
+
+uniform samplerCube skybox;
+uniform vec3 viewPos;
+
+uniform vec3 lightDirection;  // normalized
+uniform vec3 lightColor;
+uniform float lightIntensity;
 
 int permutation[256] = int[256] ( 151,160,137,91,90,15,
 		131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
@@ -40,40 +54,113 @@ int p(int i) {
     return permutation[i & 255];
 }
 
+vec3 computeDirectionalLight(vec3 normal, vec3 viewDir, vec3 albedo, float rough, float ao)
+{
+    vec3 L = normalize(-lightDirection);
+    vec3 N = normalize(normal);
+
+    // Diffuse
+    float diff = max(dot(N, L), 0.0);
+
+    // Specular (simple Blinn-Phong)
+    vec3 H = normalize(L + viewDir);
+    float shininess = mix(256.0, 2.0, rough); 
+    float spec = pow(max(dot(N, H), 0.0), shininess);
+    float specularStrength = clamp(1.0 - rough * 2.0, 0.0, 1.0);
+    spec *= specularStrength;
+
+    vec3 color =
+        albedo * diff * lightColor * lightIntensity + 
+        spec * lightColor * lightIntensity;           
+
+    return color * ao;
+}
+
+vec3 getNormalFromMap(sampler2D normMap)
+{
+    vec3 tangentNormal = texture(normMap, TexCoord).xyz * 2.0 - 1.0;
+
+    vec3 Q1  = dFdx(FragPos);
+    vec3 Q2  = dFdy(FragPos);
+    vec2 st1 = dFdx(TexCoord);
+    vec2 st2 = dFdy(TexCoord);
+
+    vec3 N   = normalize(Normal);
+    vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
+    vec3 B  = -normalize(cross(N, T));
+    mat3 TBN = mat3(T, B, N);
+
+    return normalize(TBN * tangentNormal);
+}
+
 void main()
 {
+    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 reflectDir = reflect(-viewDir, Normal);
+    vec3 skyboxReflection = texture(skybox, reflectDir).rgb;
+
 	vec2 pos = FragPos.xz;
     vec3 color = vec3(1.0, 0.0, 0.0);
+    vec3 finalColor = vec3(1.0, 0.0, 0.0);
+    float ao = 1.0;
+    float rough = 0.5;
+    vec3 norm = vec3(1.0, 0.0, 0.0);
 
     float height = octavePerlin(pos.x, pos.y);
 
+    height = height * 2.0 - 1.0; //Convert from 0-1 to -1 to 1
+	height *= heightScale; //Height scale
+	height = (height + 1.0) * 0.5; //Normalize to 0-1
+
     //Get texture sample based on height
-    if (numTextures == 0)
+    if (numMaterials == 0)
     {
         //Fallback green color
         color = vec3(0.0, 1.0, 0.0);
+        ao = 1.0;
+        rough = 0.5;
+        norm = vec3(0.5, 0.5, 1.0);
     }
-    else if(numTextures == 1)
+    else if(numMaterials == 1)
     {
+        vec2 uv = TexCoord;
+        uv.xy *= materials[0].uvTile;
+        uv = fract(uv);
+
         //Only one texture, use it for everything
-        color = texture(textures[0], TexCoord).rgb;
+        color = texture(materials[0].colorTex, uv).rgb;
+        ao = texture(materials[0].aoTex, uv).r;
+        rough = texture(materials[0].roughTex, uv).r;
+        norm = getNormalFromMap(materials[0].normalTex);
+
+        finalColor = computeDirectionalLight(norm, viewDir, color, rough, ao);
     }
     else
     {
-        for (int i = 0; i < numTextures; i++)
+        int selectedMaterial = 0;
+        for (int i = 0; i < numMaterials; i++)
         {
-            if (height > thresholds[i])
+            if (height > materials[i].threshold)
             {
-                vec2 uv = TexCoord;
-                uv.xy *= uvTile[i];
-                uv = fract(uv);
-
-                color = texture(textures[i], uv).rgb;
+                selectedMaterial = i;
             }
         }
+
+        vec2 uv = TexCoord;
+        uv.xy *= materials[selectedMaterial].uvTile;
+        uv = fract(uv);
+
+        color = texture(materials[selectedMaterial].colorTex, uv).rgb;
+        ao = texture(materials[selectedMaterial].aoTex, uv).r;
+        rough = texture(materials[selectedMaterial].roughTex, uv).r;
+        norm = getNormalFromMap(materials[selectedMaterial].normalTex);
+
+        finalColor = computeDirectionalLight(norm, viewDir, color, rough, ao);
     }
     
-    FragColor = vec4(color, 1.0);
+    float reflectionStrength = 1.0 - rough;
+    finalColor = mix(finalColor, skyboxReflection, reflectionStrength * 0.05);
+    FragColor = vec4(finalColor, 1.0);
 }
 
 float perlin(float x, float y)

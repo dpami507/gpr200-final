@@ -17,7 +17,10 @@ namespace shaderz
 		   138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
 	};
 
-	static int* p;
+	int p(int i)
+	{
+		return permutation[i & 255];
+	}
 
 	float Noise::perlin(float x, float y)
 	{
@@ -30,10 +33,10 @@ namespace shaderz
 		float u = fade(xf);
 		float v = fade(yf);
 
-		float aa = p[p[xi] + yi];
-		float ab = p[p[xi] + yi + 1];
-		float ba = p[p[xi + 1] + yi];
-		float bb = p[p[xi + 1] + yi + 1];
+		int ab = p(p(xi) + yi + 1);
+		int aa = p(p(xi) + yi);
+		int ba = p(p(xi + 1) + yi);
+		int bb = p(p(xi + 1) + yi + 1);
 
 		float d1 = grad(aa, xf, yf);
 		float d2 = grad(ba, xf - 1.0f, yf);
@@ -42,6 +45,7 @@ namespace shaderz
 
 		float x1 = lerp(d1, d2, u);
 		float x2 = lerp(d3, d4, u);
+
 		float yInter = lerp(x1, x2, v);
 
 		return (yInter + 1.0f) * 0.5f; //0-1
@@ -50,6 +54,7 @@ namespace shaderz
 	float Noise::octavePerlin(float x, float y)
 	{
 		float total = 0;
+		float persistence = 0.5f;
 		float freq = frequency;
 		float amp = 1;
 		float maxValue = 0;
@@ -90,27 +95,17 @@ namespace shaderz
 		return a + t * (b - a);
 	}
 
-	Noise::Noise(int octaves, int frequency)
+	Noise::Noise(int octaves, float frequency)
 	{
 		std::cout << "Creating Custom Noise Object\n";
 		this->octaves = octaves;
 		this->frequency = frequency;
-
-		p = new int[512];
-		for (int x = 0; x < 512; x++) {
-			p[x] = permutation[x % 256];
-		}
 	}
 	Noise::Noise()
 	{
 		std::cout << "Creating Default Noise Object\n";
 		this->octaves = 4;
 		this->frequency = 1;
-
-		p = new int[512];
-		for (int x = 0; x < 512; x++) {
-			p[x] = permutation[x % 256];
-		}
 	}
 	Noise::~Noise()
 	{
