@@ -54,11 +54,44 @@ namespace shaderz {
         glBindTexture(GL_TEXTURE_2D, noiseID);
     }
 
+    void Terrain::DrawOnNoiseTexture(glm::vec2 pos, float height)
+    {
+        //Move position so its all positive
+        pos += glm::vec2(size / 2.0f);
+
+        //Get index from position
+        int xIndex = (int)((pos.x / size) * segments);
+        int yIndex = (int)((pos.y / size) * segments);
+
+        //Increase Noise Texture at index
+        int index = (yIndex * (segments + 1)) + xIndex;
+        noiseData[index] += height;
+
+		std::cout << "Drawing on Noise Texture at index: " << index << " New Height: " << noiseData[index] << std::endl;
+
+        MeshData terrainData = createTerrain(size, segments, heightScale, noiseData);
+        this->mesh = new Mesh(terrainData);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glGenTextures(1, &noiseID);
+        glBindTexture(GL_TEXTURE_2D, noiseID);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, segments + 1, segments + 1, 0, GL_RED, GL_FLOAT, noiseData);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+
 	//Constructor to set up noise, segments and textures
 	Terrain::Terrain(const Noise& noise, float size, float heightScale, int segments) : Object(*mesh)
 	{
 		this->noise = noise;
         this->segments = segments;
+		this->size = size;
+		this->heightScale = heightScale;
 
         GenerateNoiseTexture(size, segments);
 
@@ -87,6 +120,8 @@ namespace shaderz {
 	void Terrain::load(float size, int segments, float heightScale, Noise noise)
 	{
         this->noise = noise;
+		this->segments = segments;
+		this->size = size;
 
         delete[] noiseData;
 		noiseData = nullptr;

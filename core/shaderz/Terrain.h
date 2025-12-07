@@ -19,10 +19,15 @@ namespace shaderz {
 		void BindTerrainTexture(int slot);
 		void BindNoiseTexture(int slot);
 
+		void DrawOnNoiseTexture(glm::vec2 pos, float height);
+
 		void draw(bool drawAsPoints = false, bool drawWireframe = false);
 		void load(float size, int segments, float heightScale, Noise noise);
 	private:
 		int segments;
+		float size;
+		float heightScale;
+
 		float* noiseData;
 		Noise noise;
 		GLuint noiseID;
