@@ -63,11 +63,30 @@ namespace shaderz {
         int xIndex = (int)((pos.x / size) * segments);
         int yIndex = (int)((pos.y / size) * segments);
 
-        //Increase Noise Texture at index
-        int index = (yIndex * (segments + 1)) + xIndex;
-        noiseData[index] += height;
+        //Create hump instead of spire :)
+        int width = 24;
+        for (size_t i = 0; i < width; i++)
+        {
+            for (size_t j = 0; j < width; j++)
+            {
+				//Get new index by going through a square around the point
+				int x = xIndex + i - (width / 2);
+				int y = yIndex + j - (width / 2);
 
-		std::cout << "Drawing on Noise Texture at index: " << index << " New Height: " << noiseData[index] << std::endl;
+				//Clamp to bounds
+                if (x < 0 || x > segments || y < 0 || y > segments) continue;
+
+                //New index
+				int idx = (y * (segments + 1)) + x;
+
+				//Get distance from center and calculate falloff
+				float dist = glm::distance(glm::vec2(xIndex, yIndex), glm::vec2(x, y));
+				float falloff = glm::clamp(1.0f - (dist / (width / 2.0f)), 0.0f, 1.0f);
+
+				//Increase Height with falloff
+				noiseData[idx] += height * dist;
+            }
+        }
 
         MeshData terrainData = createTerrain(size, segments, heightScale, noiseData);
         this->mesh = new Mesh(terrainData);
