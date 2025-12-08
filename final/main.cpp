@@ -417,10 +417,10 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		extern Terrain terrainObj;    // Forward declare
 		glm::vec3 hit = shaderz::rayCollision(gTerrain, camera, (int)mouseX, (int)mouseY);
 
-		gTerrain->DrawOnNoiseTexture(glm::vec2(hit.x, hit.z), 10.0f * Time::deltaTime);
+		gTerrain->DrawOnNoiseTexture(glm::vec2(hit.x, -hit.z), 10.0f * Time::deltaTime);
 
 		std::cout << "Clicked terrain vertex: "
-			<< hit.x << ", " << hit.y << ", " << hit.z << std::endl;
+			<< hit.x << ", " << hit.y << ", " << -hit.z << std::endl;
 	}
 }
 
