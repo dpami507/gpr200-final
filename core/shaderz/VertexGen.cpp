@@ -420,6 +420,7 @@ namespace shaderz {
 				v.pos.y = getSample(row, col);
 				v.pos.z = zPos;
 
+				//Generate Normals
 				float topHeight = getSample(row + 1, col);
 				float bottomLeftHeight = getSample(row - 1, col - 1);
 				float bottomRightHeight = getSample(row - 1, col + 1);

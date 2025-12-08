@@ -132,6 +132,8 @@ int main() {
 	Shader waterShader("assets/shaders/water.vert", "assets/shaders/water.frag");
 	Shader terrainShader("assets/shaders/terrain.vert", "assets/shaders/terrain.frag");
 
+	/////////////////////////////////////////////////
+
 	//Grass Texture
 	Texture2D grassColor("assets/materials/grass/GrassColor.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D grassAO("assets/materials/grass/GrassAO.jpg", GL_NEAREST, GL_REPEAT);
@@ -161,6 +163,8 @@ int main() {
 	Texture2D snowAO("assets/materials/snow/SnowAO.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D snowNorm("assets/materials/snow/SnowNorm.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D snowRough("assets/materials/snow/SnowRough.jpg", GL_NEAREST, GL_REPEAT);
+
+	/////////////////////////////////////////////////
 
 	//Water Noise
 	Texture2D waterNoise("assets/cellularNoise.jpg", GL_LINEAR, GL_REPEAT);
