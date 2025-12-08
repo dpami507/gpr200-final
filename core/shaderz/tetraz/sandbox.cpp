@@ -3,8 +3,8 @@
 // make a ray based on the mouse
 glm::vec3 shaderz::raycastMouse(Camera* cam, int mouse_x, int mouse_y) {
 	// normalize each to a range of [-1, 1]
-	float xCoord = (2 * mouse_x) / shaderz::SCREEN_WIDTH - 1.0f;
-	float yCoord = 1.0f - (2.0f * mouse_y) / shaderz::SCREEN_HEIGHT;
+	float xCoord = (2 * mouse_x) / (float)shaderz::SCREEN_WIDTH - 1.0f;
+	float yCoord = 1.0f - (2.0f * mouse_y) / (float)shaderz::SCREEN_HEIGHT;
 	float zCoord = 1.0f;
 	// make the normal ray
 	glm::vec3 normalRay = glm::vec3(xCoord, yCoord, zCoord);
