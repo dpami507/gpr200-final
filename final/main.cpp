@@ -178,7 +178,7 @@ int main() {
 
 	//Create array of terrain textures
 	std::vector<Material> terrainTextures;
-	terrainTextures.push_back({ &dirtColor,	 &dirtAO,	&dirtNorm,	&dirtRough,	0.0, 10 });
+	terrainTextures.push_back({ &dirtColor,	 &dirtAO,	&dirtNorm,	&dirtRough,	0.3, 10 });
 	terrainTextures.push_back({ &sandColor,	 &sandAO,	&sandNorm,	&sandRough,	0.45, 5 });
 	terrainTextures.push_back({ &grassColor, &grassAO,  &grassNorm, &grassRough, 0.5, 5 });
 	terrainTextures.push_back({ &rockColor,	 &rockAO,	&rockNorm,	&rockRough,	0.6, 5 });

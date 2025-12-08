@@ -142,6 +142,7 @@ void main()
     }
     else
     {
+        //Get slected material
         int selectedMaterial = 0;
         for (int i = 0; i < numMaterials; i++)
         {
@@ -151,14 +152,29 @@ void main()
             }
         }
 
+        //Mix material is the material above it
+        int mixedMaterial = clamp(selectedMaterial + 1, 0, numMaterials - 1);
+
+        //UV fracting
         vec2 uv = TexCoord;
         uv.xy *= materials[selectedMaterial].uvTile;
         uv = fract(uv);
 
-        color = texture(materials[selectedMaterial].colorTex, uv).rgb;
-        ao = texture(materials[selectedMaterial].aoTex, uv).r;
-        rough = texture(materials[selectedMaterial].roughTex, uv).r;
-        norm = getNormalFromMap(materials[selectedMaterial].normalTex);
+        //The amount of height that it blends over
+        float blendAmount = 0.05;
+
+        //The min blendAmount is the threshold of the selected material
+        float minBlendAmount = materials[selectedMaterial].threshold;
+
+        //Calculate mix amount
+        float mixAmount = (height - minBlendAmount) / blendAmount;
+        mixAmount = clamp(mixAmount, 0.0, 1.0);
+
+        //Mix textures
+        color = mix(texture(materials[selectedMaterial].colorTex, uv).rgb, texture(materials[mixedMaterial].colorTex, uv).rgb, mixAmount);
+        ao = mix(texture(materials[selectedMaterial].aoTex, uv).r, texture(materials[mixedMaterial].aoTex, uv).r, mixAmount);
+        rough = mix(texture(materials[selectedMaterial].roughTex, uv).r, texture(materials[mixedMaterial].roughTex, uv).r, mixAmount);
+        norm = mix(getNormalFromMap(materials[selectedMaterial].normalTex),  getNormalFromMap(materials[mixedMaterial].normalTex), mixAmount);
 
         finalColor = computeDirectionalLight(norm, viewDir, color, rough, ao);
     }
