@@ -54,7 +54,7 @@ namespace shaderz {
         glBindTexture(GL_TEXTURE_2D, noiseID);
     }
 
-    void Terrain::DrawOnNoiseTexture(glm::vec2 pos, float height)
+    void Terrain::DrawOnNoiseTexture(glm::vec2 pos, float height, int width)
     {
         //Move position so its all positive
         pos += glm::vec2(size / 2.0f);
@@ -64,7 +64,6 @@ namespace shaderz {
         int yIndex = (int)((pos.y / size) * segments);
 
         //Create hump instead of spire :)
-        int width = 24;
         for (size_t i = 0; i < width; i++)
         {
             for (size_t j = 0; j < width; j++)
@@ -84,7 +83,7 @@ namespace shaderz {
 				float falloff = glm::clamp(1.0f - (dist / (width / 2.0f)), 0.0f, 1.0f);
 
 				//Increase Height with falloff
-				noiseData[idx] += height * dist;
+				noiseData[idx] += height * falloff;
             }
         }
 
@@ -141,6 +140,7 @@ namespace shaderz {
         this->noise = noise;
 		this->segments = segments;
 		this->size = size;
+		this->heightScale = heightScale;
 
         delete[] noiseData;
 		noiseData = nullptr;

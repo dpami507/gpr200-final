@@ -55,6 +55,7 @@ float heightScale = 1;
 float terrainSize = 3;
 float frequency = 1;
 int octaveCount = 4;
+int brushSize = 16;
 
 //Water settings
 float waterHeight = 0.015;
@@ -229,11 +230,16 @@ int main() {
 			//Bind skybox
 			skybox.bind(0);
 			terrainShader.setInt("skybox", 0);
+
+			//Set up noise texture
+			terrainObj.BindNoiseTexture(1);
+			terrainShader.setInt("noiseTexture", 1);
+
 			terrainShader.setFloat("heightScale", heightScale);
 			//Bind terrain textures
 			for(int i = 0; i < terrainTextures.size(); i++)
 			{
-				int baseUnit = 1 + (i * 4);
+				int baseUnit = 2 + (i * 4);
 
 				terrainTextures[i].color->Bind(baseUnit + 0);
 				terrainShader.setInt("materials[" + std::to_string(i) + "].colorTex",	baseUnit + 0);
@@ -332,6 +338,8 @@ int main() {
 				ImGui::SliderInt("Octave Count", &octaveCount, 1, 8);
 				ImGui::SliderFloat("Frequency", &frequency, 0.0, 8.0);
 
+				ImGui::Separator();
+				ImGui::SliderInt("Brush Size", &brushSize, 1, 128);
 				if (ImGui::Button("Regenerate Terrain"))
 				{
 					Noise perlinNoise(octaveCount, frequency);
@@ -417,7 +425,14 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		extern Terrain terrainObj;    // Forward declare
 		glm::vec3 hit = shaderz::rayCollision(gTerrain, camera, (int)mouseX, (int)mouseY);
 
-		gTerrain->DrawOnNoiseTexture(glm::vec2(hit.x, -hit.z), 10.0f * Time::deltaTime);
+		float brushStrength = 0.0f;
+
+		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+			brushStrength = -10.0f * Time::deltaTime;
+		else
+			brushStrength = 10.0f * Time::deltaTime;
+
+		gTerrain->DrawOnNoiseTexture(glm::vec2(hit.x, -hit.z), brushStrength, brushSize);
 
 		std::cout << "Clicked terrain vertex: "
 			<< hit.x << ", " << hit.y << ", " << -hit.z << std::endl;
