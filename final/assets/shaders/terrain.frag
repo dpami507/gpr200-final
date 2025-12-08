@@ -28,6 +28,9 @@ float grad(int hash, float x, float y);
 float fade(float t);
 float lerp(float a, float b, float t);
 
+//This is used to check if drawing has occured and update colors based on it
+uniform sampler2D noiseTexture;
+
 uniform samplerCube skybox;
 uniform vec3 viewPos;
 
@@ -107,6 +110,8 @@ void main()
     vec3 norm = vec3(1.0, 0.0, 0.0);
 
     float height = octavePerlin(pos.x, pos.y);
+    float differenceInHeight = height - texture(noiseTexture, TexCoord).r;
+    height -= differenceInHeight;
 
     height = height * 2.0 - 1.0; //Convert from 0-1 to -1 to 1
 	height *= heightScale; //Height scale
