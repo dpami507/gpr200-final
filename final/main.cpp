@@ -416,6 +416,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		// Terrain object is global in main()
 		extern Terrain terrainObj;    // Forward declare
 		glm::vec3 hit = shaderz::rayCollision(gTerrain, camera, (int)mouseX, (int)mouseY);
+		if (hit == glm::vec3(1234567, 1234567, 1234567))
+			return; // it didn't hit anything and shouldn't check anything
 
 		gTerrain->DrawOnNoiseTexture(glm::vec2(hit.x, -hit.z), 10.0f * Time::deltaTime);
 

@@ -63,6 +63,8 @@ bool doesRayIntersectTriangle(const glm::vec3& orig, const glm::vec3& dir, const
 
 glm::vec3 shaderz::rayCollision(Object* obj, Camera* cam, int mouse_x, int mouse_y) {
 
+	bool didActuallyHit = false;
+
 	// get the ray's direction with the power of the other function lol
 	glm::vec3 rayDir = shaderz::raycastMouse(cam, mouse_x, mouse_y);
 	glm::vec3 rayOrigin = cam->getPosition();
@@ -106,10 +108,19 @@ glm::vec3 shaderz::rayCollision(Object* obj, Camera* cam, int mouse_x, int mouse
 					(d1 < d2) ? v1 :
 					v2;
 			}
+			didActuallyHit = true;
+			break;
 		}
 	}
 
 	// debug while it doesn't visually do anything in the output window to show it actually collides with stuff
-	std::cout << "closest vertex is (" << closestVertex.x << ", " << closestVertex.y << ", " << closestVertex.z << ") " << std::endl;
-	return closestVertex; // works even if untouched (no hit -> 0,0,0)
+	if (didActuallyHit) {
+		std::cout << "closest vertex is (" << closestVertex.x << ", " << closestVertex.y << ", " << closestVertex.z << ") " << std::endl;
+		return closestVertex;
+	}
+	else {
+		std::cout << "The collider didn't hit!" << std::endl;
+		return glm::vec3(1234567, 1234567, 1234567);
+	}
+
 }
