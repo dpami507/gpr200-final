@@ -1,5 +1,6 @@
 #include "Perlin.h"
 
+//David Amidon
 namespace shaderz
 {
 	static int permutation[256] = { 151,160,137,91,90,15,

@@ -378,6 +378,7 @@ namespace shaderz {
 
 		return m;	
 	}
+	//David Amidon
 	MeshData createTerrain(float size, int segments, float heightScale, float* terrainTexture)
 	{
 		MeshData m;

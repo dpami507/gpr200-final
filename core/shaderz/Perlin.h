@@ -7,6 +7,7 @@
 #include "Time.h"
 
 //Created following this tutorial: https://www.youtube.com/watch?v=iW4nFygKAjw and https://adrianb.io/2014/08/09/perlinnoise.html
+//David Amidon
 namespace shaderz
 {
 	class Noise
