@@ -378,6 +378,7 @@ namespace shaderz {
 
 		return m;	
 	}
+	//David Amidon
 	MeshData createTerrain(float size, int segments, float heightScale, float* terrainTexture)
 	{
 		MeshData m;
@@ -420,6 +421,7 @@ namespace shaderz {
 				v.pos.y = getSample(row, col);
 				v.pos.z = zPos;
 
+				//Generate Normals
 				float topHeight = getSample(row + 1, col);
 				float bottomLeftHeight = getSample(row - 1, col - 1);
 				float bottomRightHeight = getSample(row - 1, col + 1);

@@ -7,6 +7,7 @@
 #include "Time.h"
 
 //Created following this tutorial: https://www.youtube.com/watch?v=iW4nFygKAjw and https://adrianb.io/2014/08/09/perlinnoise.html
+//David Amidon
 namespace shaderz
 {
 	class Noise
@@ -22,8 +23,13 @@ namespace shaderz
 
 		float perlin(float x, float y);
 		float octavePerlin(float x, float y);
+
 		void SetOctaves(int octaves) { this->octaves = octaves; }
 		void SetFrequency(float frequency) { this->frequency = frequency; }
+		void SetPersistence(float persistence) { this->persistence = persistence; }
+		void SetAmplitude(float amplitude) { this->amplitude = amplitude; }
+		void SetRegionSize(float regionSize) { this->regionSize = regionSize; }
+		void SetRegionInfluence(float regionInfluence) { this->regionInfluence = regionInfluence; }
 
 		int GetFrequency() const { return frequency; }
 		int GetOctaves() const { return octaves; }
@@ -31,6 +37,10 @@ namespace shaderz
 	private:
 		int octaves = 4;
 		float frequency = 0.5f;
+		float persistence = 0.5;
+		float amplitude = 1.0f;
+		float regionSize = 0.2;
+		float regionInfluence = 0.7;
 	};
 }
 

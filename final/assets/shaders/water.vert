@@ -7,8 +7,6 @@ out vec2 TexCoord;
 out vec3 FragPos; 
 out vec3 Normal;
 
-out float waveCalc;
-
 uniform mat4 model;
 uniform mat4 projectionView;
 uniform float uTime;
@@ -19,10 +17,9 @@ uniform float width;
 uniform float height;
 uniform float speed;
 
-void main()
+float getWaveCalc(vec3 pos)
 {
-	//Create Waves
-	vec3 pos = aPos;
+	float waveCalc = 0;
 
 	//Fract it for more waves
 	vec2 uv = aTexCoord;
@@ -34,9 +31,18 @@ void main()
     uv.y -= uTime * speed * 2.0;
 
 	//Move the vertex up based on the height
-	pos.y = texture(cellularNoise, uv).r * height;
-	pos.y += sin(width * ((pos.x + pos.z) + (uTime * speed))) * height;
-	waveCalc = pos.y / height;
+	waveCalc = texture(cellularNoise, uv).r * height;
+	waveCalc += sin(width * ((pos.x + pos.z) + (uTime * speed))) * height;
+
+	return waveCalc;
+}
+
+void main()
+{
+	vec3 pos = aPos;
+	float waveCalc = getWaveCalc(pos);
+
+	pos.y = waveCalc;
 
 	//Set up out variables
 	gl_Position = projectionView * model * vec4(pos, 1.0);

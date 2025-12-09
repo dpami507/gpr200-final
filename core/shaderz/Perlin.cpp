@@ -1,5 +1,6 @@
 #include "Perlin.h"
 
+//David Amidon
 namespace shaderz
 {
 	static int permutation[256] = { 151,160,137,91,90,15,
@@ -24,28 +25,35 @@ namespace shaderz
 
 	float Noise::perlin(float x, float y)
 	{
+		//Take in a position and create cell coords / mapp to 0-255
 		int xi = (int)(floor(x)) & 255;
 		int yi = (int)(floor(y)) & 255;
 
+		//Offset coords
 		float xf = x - floor(x);
 		float yf = y - floor(y);
 
-		float u = fade(xf);
-		float v = fade(yf);
+		//Get 4 corners of the points in hash form
+		int ab = p(p(xi) + yi + 1);		//ab---bb
+		int aa = p(p(xi) + yi);			//|		 |
+		int ba = p(p(xi + 1) + yi);		//|		 |
+		int bb = p(p(xi + 1) + yi + 1);	//aa---ba
 
-		int ab = p(p(xi) + yi + 1);
-		int aa = p(p(xi) + yi);
-		int ba = p(p(xi + 1) + yi);
-		int bb = p(p(xi + 1) + yi + 1);
-
+		//create gradient dot values
 		float d1 = grad(aa, xf, yf);
 		float d2 = grad(ba, xf - 1.0f, yf);
 		float d3 = grad(ab, xf, yf - 1.0f);
 		float d4 = grad(bb, xf - 1.0f, yf - 1.0f);
 
+		//Get fade with decimal range
+		float u = fade(xf);
+		float v = fade(yf);
+
+		//Lerp between gradient vectors
 		float x1 = lerp(d1, d2, u);
 		float x2 = lerp(d3, d4, u);
 
+		//Lerp between gradient vectors
 		float yInter = lerp(x1, x2, v);
 
 		return (yInter + 1.0f) * 0.5f; //0-1
@@ -54,10 +62,11 @@ namespace shaderz
 	float Noise::octavePerlin(float x, float y)
 	{
 		float total = 0;
-		float persistence = 0.5f;
+		float persistence = this->persistence;
 		float freq = frequency;
-		float amp = 1;
+		float amp = this->amplitude;
 		float maxValue = 0;
+
 		for (int i = 0; i < octaves; i++)
 		{
 			total += perlin(x * freq, y * freq) * amp;
@@ -70,9 +79,13 @@ namespace shaderz
 
 		float noiseValue = total / maxValue;
 
-		return noiseValue;
+		float regionNoise = perlin(x * regionSize, y * regionSize);
+		float reuslt = regionNoise * regionInfluence + noiseValue * (1.0 - regionInfluence);
+
+		return reuslt;
 	}
 
+	//Generate gradient dot values
 	float Noise::grad(int hash, float x, float y)
 	{
 		switch (hash & 3)
@@ -85,11 +98,13 @@ namespace shaderz
 		}
 	}
 
+	//Curve function created by Ken Perlin
 	float Noise::fade(float t)
 	{
 		return t * t * t * (t * (t * 6 - 15) + 10);
 	}
 
+	//Lerp function between two points
 	float Noise::lerp(float a, float b, float t)
 	{
 		return a + t * (b - a);

@@ -53,9 +53,17 @@ float sphereRadius = 1;
 int terrainSubdivision = 256;
 float heightScale = 1;
 float terrainSize = 3;
+
+//Drawing
+int brushSize = 16;
+
+//Noise
 float frequency = 1;
 int octaveCount = 4;
-int brushSize = 16;
+float persistence = 0.5;
+float amplitude = 1.0f;
+float regionSize = 0.2;
+float regionInfluence = 0.7;
 
 //Water settings
 float waterHeight = 0.015;
@@ -63,11 +71,11 @@ float waterWidth = 6;
 float waterSpeed = 0.05;
 
 //Drawing Options
-int currShade = 2;
+int currShade = 0;
 const char* itemNames[3] = {
+  "Shaded",
   "UVs",
-  "Normals",
-  "Shaded"
+  "Normals"
 };
 bool wireframe = false;
 bool point = false;
@@ -132,6 +140,8 @@ int main() {
 	Shader waterShader("assets/shaders/water.vert", "assets/shaders/water.frag");
 	Shader terrainShader("assets/shaders/terrain.vert", "assets/shaders/terrain.frag");
 
+	/////////////////////////////////////////////////
+
 	//Grass Texture
 	Texture2D grassColor("assets/materials/grass/GrassColor.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D grassAO("assets/materials/grass/GrassAO.jpg", GL_NEAREST, GL_REPEAT);
@@ -162,6 +172,8 @@ int main() {
 	Texture2D snowNorm("assets/materials/snow/SnowNorm.jpg", GL_NEAREST, GL_REPEAT);
 	Texture2D snowRough("assets/materials/snow/SnowRough.jpg", GL_NEAREST, GL_REPEAT);
 
+	/////////////////////////////////////////////////
+
 	//Water Noise
 	Texture2D waterNoise("assets/cellularNoise.jpg", GL_LINEAR, GL_REPEAT);
 
@@ -178,11 +190,11 @@ int main() {
 
 	//Create array of terrain textures
 	std::vector<Material> terrainTextures;
-	terrainTextures.push_back({ &dirtColor,	 &dirtAO,	&dirtNorm,	&dirtRough,	0.0, 10 });
+	terrainTextures.push_back({ &dirtColor,	 &dirtAO,	&dirtNorm,	&dirtRough,	0.3, 10 });
 	terrainTextures.push_back({ &sandColor,	 &sandAO,	&sandNorm,	&sandRough,	0.45, 5 });
 	terrainTextures.push_back({ &grassColor, &grassAO,  &grassNorm, &grassRough, 0.5, 5 });
 	terrainTextures.push_back({ &rockColor,	 &rockAO,	&rockNorm,	&rockRough,	0.6, 5 });
-	terrainTextures.push_back({ &snowColor,	 &snowAO,	&snowNorm,	&snowRough,	0.75, 5 });
+	terrainTextures.push_back({ &snowColor,	 &snowAO,	&snowNorm,	&snowRough,	0.85, 5 });
 
 	//Create Terrain Object
 	Terrain terrainObj(perlinNoise, terrainSize, heightScale, terrainSubdivision);
@@ -217,7 +229,7 @@ int main() {
 			//Set TerrainShader
 			terrainShader.use();
 			terrainShader.setMat4("projectionView", camera.getProjectionView());
-
+			terrainShader.setInt("shadingMode", currShade);
 			//Set up texture for Terrain
 			terrainShader.use();
 			terrainShader.setFloat("frequency", frequency);
@@ -334,15 +346,27 @@ int main() {
 			{
 				ImGui::SliderInt("Terrain Segments", &terrainSubdivision, 1, 2048); 
 				ImGui::SliderFloat("Terrain Size", &terrainSize, 1, 16);
-				ImGui::SliderFloat("Hegiht Scale", &heightScale, 1, 3);
-				ImGui::SliderInt("Octave Count", &octaveCount, 1, 8);
-				ImGui::SliderFloat("Frequency", &frequency, 0.0, 8.0);
+				ImGui::SliderFloat("Hegiht Scale", &heightScale, 1, 16);
 
 				ImGui::Separator();
+
+				ImGui::SliderInt("Octave Count", &octaveCount, 1, 8);
+				ImGui::SliderFloat("Frequency", &frequency, 0.0, 8.0);
+				ImGui::SliderFloat("Amplitude", &amplitude, 0.0, 1.0);
+				ImGui::SliderFloat("Persistence", &persistence, 0.0, 1.0);
+				ImGui::SliderFloat("Region Size", &regionSize, 0.0, 1.0);
+				ImGui::SliderFloat("Region Influence", &regionInfluence, 0.0, 1.0);
+
+				ImGui::Separator();
+
 				ImGui::SliderInt("Brush Size", &brushSize, 1, 128);
 				if (ImGui::Button("Regenerate Terrain"))
 				{
 					Noise perlinNoise(octaveCount, frequency);
+					perlinNoise.SetAmplitude(amplitude);
+					perlinNoise.SetPersistence(persistence);
+					perlinNoise.SetRegionSize(regionSize);
+					perlinNoise.SetRegionInfluence(regionInfluence);
 
 					terrainObj.load(terrainSize, terrainSubdivision, heightScale, perlinNoise);
 					plane.load(createPlane(terrainSize, terrainSize, terrainSubdivision, true));
