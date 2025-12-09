@@ -1,3 +1,5 @@
+// Tetra made this file
+
 #include "sandbox.h"
 
 // make a ray based on the mouse
@@ -17,13 +19,15 @@ glm::vec3 shaderz::raycastMouse(Camera* cam, int mouse_x, int mouse_y) {
 	rayWithCam = glm::vec4(rayWithCam.x, rayWithCam.y, -1.0, 0.0);
 
 	// set the ray to world coordinates
-	glm::vec3 rayToWorld = glm::vec3((glm::inverse(cam->getView()) * rayWithCam).x, (glm::inverse(cam->getView()) * rayWithCam).y, (glm::inverse(cam->getView()) * rayWithCam).z);
+	glm::vec3 rayToWorld = glm::vec3((glm::inverse(cam->getView()) * rayWithCam).x, 
+		(glm::inverse(cam->getView()) * rayWithCam).y, (glm::inverse(cam->getView()) * rayWithCam).z);
 	// normalize the final ray and send it back
 	return glm::normalize(rayToWorld);
 }
 
 // check if the ray intersects a triangle using moller trumbore algorithm
-bool doesRayIntersectTriangle(const glm::vec3& orig, const glm::vec3& dir, const glm::vec3& vertice0, const glm::vec3& vertice1, const glm::vec3& vertice2, float& tOut) {
+bool doesRayIntersectTriangle(const glm::vec3& orig, const glm::vec3& dir, const glm::vec3& vertice0, 
+	const glm::vec3& vertice1, const glm::vec3& vertice2, float& tOut) {
 	//get edges of the trianlge
 	glm::vec3 edge1 = vertice1 - vertice0;
 	glm::vec3 edge2 = vertice2 - vertice0;
@@ -37,15 +41,16 @@ bool doesRayIntersectTriangle(const glm::vec3& orig, const glm::vec3& dir, const
 		return false;
 	}
 
-	// this stuff is the main math of the algorithm that goes over my head LMAO
-	float f = 1.0f / a;
-	glm::vec3 s = orig - vertice0;
+	// beeg math
+	float f = 1.0f / a; // get the reciprocal of the scalar a
+	glm::vec3 s = orig - vertice0; // get the vector from v0 to the ray's origin
 
-	float u = f * glm::dot(s, h);
-	if (u < 0.0f || u > 1.0f)
+	float u = f * glm::dot(s, h); // compute the barycentric coordinate of the intersection point on the plane
+	if (u < 0.0f || u > 1.0f) // if it is not within 0 and 1, then the intersection point is not within the actual triangle.
 		return false;
 
-	glm::vec3 q = glm::cross(s, edge1);
+	// same thing as above but for other relevant axis
+	glm::vec3 q = glm::cross(s, edge1); 
 	float v = f * glm::dot(dir, q);
 	if (v < 0.0f || u + v > 1.0f)
 		return false;
@@ -80,7 +85,8 @@ glm::vec3 shaderz::rayCollision(Object* obj, Camera* cam, int mouse_x, int mouse
 	float closestT = std::numeric_limits<float>::max();
 	glm::vec3 closestVertex(0);
 
-	// go through every triangle (optimization here is likely in the future if I have time, but is likely out of scope considering how long just getting the collision done took)
+	// go through every triangle (optimization here is likely in the future if I have time, 
+	// but is likely out of scope considering how long just getting the collision done took)
 	for (size_t i = 0; i < indices.size(); i += 3)
 	{
 		// connect the vertice positions to the world space
@@ -115,7 +121,8 @@ glm::vec3 shaderz::rayCollision(Object* obj, Camera* cam, int mouse_x, int mouse
 
 	// debug while it doesn't visually do anything in the output window to show it actually collides with stuff
 	if (didActuallyHit) {
-		std::cout << "closest vertex is (" << closestVertex.x << ", " << closestVertex.y << ", " << closestVertex.z << ") " << std::endl;
+		std::cout << "closest vertex is (" << closestVertex.x << ", " << closestVertex.y << ", "
+			<< closestVertex.z << ") " << std::endl;
 		return closestVertex;
 	}
 	else {

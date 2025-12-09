@@ -411,7 +411,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 	camera->processMouseMovement(xoffset, yoffset);
 }
 
-// david I was too eepy and couldn't figure out to use your functions so I just added another
+// Tetra made this file
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
