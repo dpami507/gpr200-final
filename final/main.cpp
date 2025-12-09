@@ -71,11 +71,11 @@ float waterWidth = 6;
 float waterSpeed = 0.05;
 
 //Drawing Options
-int currShade = 2;
+int currShade = 0;
 const char* itemNames[3] = {
+  "Shaded",
   "UVs",
-  "Normals",
-  "Shaded"
+  "Normals"
 };
 bool wireframe = false;
 bool point = false;
@@ -229,7 +229,7 @@ int main() {
 			//Set TerrainShader
 			terrainShader.use();
 			terrainShader.setMat4("projectionView", camera.getProjectionView());
-
+			terrainShader.setInt("shadingMode", currShade);
 			//Set up texture for Terrain
 			terrainShader.use();
 			terrainShader.setFloat("frequency", frequency);

@@ -5,10 +5,10 @@ in vec2 TexCoord;
 in vec3 FragPos;
 in vec3 Normal;
 
-uniform float frequency;
-uniform int octaves;
+//Noise
 uniform float heightScale;
 
+//Materials
 struct Material {
     sampler2D colorTex;
     sampler2D aoTex;
@@ -22,6 +22,7 @@ uniform int numMaterials;
 const int MAX_TERRAIN_MATERIALS = 5;
 uniform Material materials[MAX_TERRAIN_MATERIALS];
 
+//Noise Prototypes
 float perlin(float x, float y);
 float octavePerlin(float x, float y);
 float grad(int hash, float x, float y);
@@ -31,13 +32,18 @@ float lerp(float a, float b, float t);
 //This is used to check if drawing has occured and update colors based on it
 uniform sampler2D noiseTexture;
 
+//Skybox
 uniform samplerCube skybox;
 uniform vec3 viewPos;
 
+//Light
 uniform vec3 lightDirection;
 uniform vec3 lightColor;
 uniform float lightIntensity;
 
+uniform int shadingMode = 0;
+
+//Get Color with all the maps and light inculded
 vec3 computeDirectionalLight(vec3 normal, vec3 viewDir, vec3 albedo, float rough, float ao)
 {
     vec3 L = normalize(-lightDirection);
@@ -59,7 +65,7 @@ vec3 computeDirectionalLight(vec3 normal, vec3 viewDir, vec3 albedo, float rough
 
     return color * ao;
 }
-
+//get the normal from the normal map provided
 vec3 getNormalFromMap(sampler2D normMap)
 {
     vec3 tangentNormal = texture(normMap, TexCoord).xyz * 2.0 - 1.0;
@@ -98,6 +104,8 @@ void main()
 	height *= heightScale; //Height scale
 	height = (height + 1.0) * 0.5; //Normalize to 0-1
 
+    vec2 uv = TexCoord;
+
     //Get texture sample based on height
     if (numMaterials == 0)
     {        
@@ -110,7 +118,6 @@ void main()
     else if(numMaterials == 1)
     {
         //Fract it a bit
-        vec2 uv = TexCoord;
         uv.xy *= materials[0].uvTile;
         uv = fract(uv);
 
@@ -136,7 +143,6 @@ void main()
         int mixedMaterial = clamp(selectedMaterial + 1, 0, numMaterials - 1);
 
         //UV fracting
-        vec2 uv = TexCoord;
         uv.xy *= materials[selectedMaterial].uvTile;
         uv = fract(uv);
 
@@ -161,6 +167,20 @@ void main()
 
     //Calculate how strong to reflect skybox based on the roughness texture
     float reflectionStrength = 1.0 - rough;
-    finalColor = mix(finalColor, skyboxReflection, reflectionStrength * 0.05);
+
+    //Shaded, UV, Normals
+    switch(shadingMode % 3)
+    {
+        case 0:
+            finalColor = mix(finalColor, skyboxReflection, reflectionStrength * 0.05);
+            break;
+        case 1:
+            finalColor = vec3(abs(uv), 0.0);
+            break;
+        case 2:
+            finalColor = abs(norm);
+            break;
+    }
+
     FragColor = vec4(finalColor, 1.0);
 }
