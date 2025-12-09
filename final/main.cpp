@@ -53,9 +53,17 @@ float sphereRadius = 1;
 int terrainSubdivision = 256;
 float heightScale = 1;
 float terrainSize = 3;
+
+//Drawing
+int brushSize = 16;
+
+//Noise
 float frequency = 1;
 int octaveCount = 4;
-int brushSize = 16;
+float persistence = 0.5;
+float amplitude = 1.0f;
+float regionSize = 0.2;
+float regionInfluence = 0.7;
 
 //Water settings
 float waterHeight = 0.015;
@@ -186,7 +194,7 @@ int main() {
 	terrainTextures.push_back({ &sandColor,	 &sandAO,	&sandNorm,	&sandRough,	0.45, 5 });
 	terrainTextures.push_back({ &grassColor, &grassAO,  &grassNorm, &grassRough, 0.5, 5 });
 	terrainTextures.push_back({ &rockColor,	 &rockAO,	&rockNorm,	&rockRough,	0.6, 5 });
-	terrainTextures.push_back({ &snowColor,	 &snowAO,	&snowNorm,	&snowRough,	0.75, 5 });
+	terrainTextures.push_back({ &snowColor,	 &snowAO,	&snowNorm,	&snowRough,	0.85, 5 });
 
 	//Create Terrain Object
 	Terrain terrainObj(perlinNoise, terrainSize, heightScale, terrainSubdivision);
@@ -338,15 +346,27 @@ int main() {
 			{
 				ImGui::SliderInt("Terrain Segments", &terrainSubdivision, 1, 2048); 
 				ImGui::SliderFloat("Terrain Size", &terrainSize, 1, 16);
-				ImGui::SliderFloat("Hegiht Scale", &heightScale, 1, 3);
-				ImGui::SliderInt("Octave Count", &octaveCount, 1, 8);
-				ImGui::SliderFloat("Frequency", &frequency, 0.0, 8.0);
+				ImGui::SliderFloat("Hegiht Scale", &heightScale, 1, 16);
 
 				ImGui::Separator();
+
+				ImGui::SliderInt("Octave Count", &octaveCount, 1, 8);
+				ImGui::SliderFloat("Frequency", &frequency, 0.0, 8.0);
+				ImGui::SliderFloat("Amplitude", &amplitude, 0.0, 1.0);
+				ImGui::SliderFloat("Persistence", &persistence, 0.0, 1.0);
+				ImGui::SliderFloat("Region Size", &regionSize, 0.0, 1.0);
+				ImGui::SliderFloat("Region Influence", &regionInfluence, 0.0, 1.0);
+
+				ImGui::Separator();
+
 				ImGui::SliderInt("Brush Size", &brushSize, 1, 128);
 				if (ImGui::Button("Regenerate Terrain"))
 				{
 					Noise perlinNoise(octaveCount, frequency);
+					perlinNoise.SetAmplitude(amplitude);
+					perlinNoise.SetPersistence(persistence);
+					perlinNoise.SetRegionSize(regionSize);
+					perlinNoise.SetRegionInfluence(regionInfluence);
 
 					terrainObj.load(terrainSize, terrainSubdivision, heightScale, perlinNoise);
 					plane.load(createPlane(terrainSize, terrainSize, terrainSubdivision, true));

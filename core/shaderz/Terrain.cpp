@@ -87,9 +87,11 @@ namespace shaderz {
             }
         }
 
+        //Remake mesh
         MeshData terrainData = createTerrain(size, segments, heightScale, noiseData);
         this->mesh = new Mesh(terrainData);
 
+        //Reload texture
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 

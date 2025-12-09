@@ -61,10 +61,11 @@ namespace shaderz
 	float Noise::octavePerlin(float x, float y)
 	{
 		float total = 0;
-		float persistence = 0.5f;
+		float persistence = this->persistence;
 		float freq = frequency;
-		float amp = 1;
+		float amp = this->amplitude;
 		float maxValue = 0;
+
 		for (int i = 0; i < octaves; i++)
 		{
 			total += perlin(x * freq, y * freq) * amp;
@@ -77,7 +78,10 @@ namespace shaderz
 
 		float noiseValue = total / maxValue;
 
-		return noiseValue;
+		float regionNoise = perlin(x * regionSize, y * regionSize);
+		float reuslt = regionNoise * regionInfluence + noiseValue * (1.0 - regionInfluence);
+
+		return reuslt;
 	}
 
 	//Generate gradient dot values
